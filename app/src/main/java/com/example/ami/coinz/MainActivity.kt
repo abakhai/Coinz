@@ -138,8 +138,13 @@ class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineLis
         }
     }
 
+    @SuppressWarnings("MissingPermission")
     override fun onStart() {
         super.onStart()
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
+            locationEngine?.requestLocationUpdates()
+            locationLayerPlugin?.onStart()
+        }
         mapView.onStart()
     }
 
@@ -154,12 +159,15 @@ class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineLis
 
     override fun onStop() {
         super.onStop()
+        locationEngine?.removeLocationUpdates()
+        locationLayerPlugin?.onStop()
         mapView.onStop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         mapView.onDestroy()
+        locationEngine?.deactivate()
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
