@@ -1,6 +1,9 @@
 package com.example.ami.coinz
 
 import com.google.gson.annotations.SerializedName
+import com.mapbox.geojson.Geometry
+import org.json.JSONObject
+import java.util.*
 
 class GeoItem {
 
@@ -8,25 +11,18 @@ class GeoItem {
         private var type: String? = null
 
         @SerializedName("propeties")
-        private var width: Int = 0
+        private var properties: JSONObject? = null
 
-        @SerializedName("id")
-        private var id: String? = null
+        @SerializedName("geometry")
+        private var geometry: Geometry? = null
 
-        @SerializedName("url")
-        private var url: String? = null
-
-        @SerializedName("height")
-        private var height: Int = 0
 
 
         override fun toString(): String {
-            return "MemesItem{" +
-                    "name = '" + name + '\''.toString() +
-                    ",width = '" + width + '\''.toString() +
-                    ",id = '" + id + '\''.toString() +
-                    ",url = '" + url + '\''.toString() +
-                    ",height = '" + height + '\''.toString() +
+            return "GeoItem{" +
+                    "type = '" + type + '\''.toString() +
+                    ",properties = '" + properties + '\''.toString() +
+                    ",geometry = '" + geometry + '\''.toString() +
                     "}"
         }
 }

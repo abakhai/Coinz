@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineLis
     private lateinit var permissionManager: PermissionsManager
     private lateinit var originLocation : Location
     private var locationEngine : LocationEngine? = null
+    private var retro : RetrofitClient? = null
 
     private var locationLayerPlugin : LocationLayerPlugin? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +49,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineLis
             map = mapboxMap
             enableLocation()
         }
+
+
 
 
 
