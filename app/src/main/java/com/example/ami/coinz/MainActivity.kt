@@ -1,5 +1,6 @@
 package com.example.ami.coinz
 
+import android.content.Context
 import android.location.Location
 import android.os.Bundle
 import android.os.PersistableBundle
@@ -32,6 +33,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     private lateinit var mapView : MapView
 
     private var tag = "MainActivity"
+
+    private var downloadDate = ""// Format: YYYY/MM/DD
+    private val preferencesFile = "MyPrefsFile" // for storing preferences
+
     //For user location
     private lateinit var map : MapboxMap
 
@@ -184,6 +189,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     @SuppressWarnings("MissingPermission")
     override fun onStart() {
         super.onStart()
+
+        //Restore preferences
+        val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
+
+        //use "" as the default value (this might be the first time the app is run)
+        downloadDate = settings.getString("lastDownloadDate", "")
+
+        //Write a message to "logcat" (for debugging purposes)
+        Log.d(tag, "[onStart] Recalled lastDownloadDate is $downloadDate" )
+
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
             locationEngine?.requestLocationUpdates()
             locationLayerPlugin?.onStart()
@@ -202,6 +217,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
     override fun onStop() {
         super.onStop()
+
+        Log.d(tag, "[onStop] Storing lastDownloadDate of $downloadDate")
+
+        //All objects are from android.context.Context
+
+        val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
+
+        //We need an Editor object to make preferences changes
+        val editor = settings.edit()
+        editor.putString("lastDownloadDate", downloadDate)
+        //Apply the edits!
+        editor.apply()
+
         locationEngine?.removeLocationUpdates()
         locationLayerPlugin?.onStop()
         mapView.onStop()
