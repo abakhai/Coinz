@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.mapbox.android.core.location.LocationEngine
@@ -19,6 +20,7 @@ import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
@@ -26,9 +28,10 @@ import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
-class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineListener {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListener, LocationEngineListener {
     private lateinit var mapView : MapView
 
+    private var tag = "MainActivity"
     //For user location
     private lateinit var map : MapboxMap
 
@@ -42,13 +45,15 @@ class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineLis
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        Mapbox.getInstance(applicationContext, getString(R.string.access_key))
+        Mapbox.getInstance(this, getString(R.string.access_key))
+        //changed it from applicationcontext TODO remove comment
         mapView = findViewById(R.id.mapboxMapView)
         mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync { mapboxMap ->
-            map = mapboxMap
-            enableLocation()
-        }
+//        mapView.getMapAsync { mapboxMap ->
+//            map = mapboxMap
+//            enableLocation()
+//        }
+        mapView.getMapAsync(this)
 
 
 
@@ -60,11 +65,28 @@ class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineLis
         }
     }
 
-    fun enableLocation() {
+    override fun onMapReady(mapboxMap: MapboxMap?) {
+        if (mapboxMap == null) {
+            Log.d(tag, "[onMapReady mapboxMap is null")
+        } else {
+            map = mapboxMap
+            //Set user interface options
+            map.uiSettings.isCompassEnabled = true
+            map.uiSettings.isZoomControlsEnabled = true
+            //TODO see if its ok without the ? like in the lecture
+
+            //Make location information available
+            enableLocation()
+        }
+    }
+
+    private fun enableLocation() {
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
+            Log.d(tag, "Permissions are granted")
             initLocationEngine()
             initLocationLayer()
         } else {
+            Log.d(tag, "Permissions are not granted")
             permissionManager = PermissionsManager(this)
             permissionManager.requestLocationPermissions(this)
         }
@@ -72,25 +94,34 @@ class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineLis
 
     @SuppressWarnings("MissingPermission")
     override fun onConnected() {
+        Log.d(tag, "[onConnected] requesting location update")
         locationEngine?.requestLocationUpdates()
     }
 
     override fun onLocationChanged(location: Location?) {
-        location?.let {
+        if (location == null) {
+            Log.d(tag, "[onLocationChanged location is null")
+
+        } else {
             originLocation = location
-            setCameraPostition(location)
+            setCameraPostition(originLocation)
         }
     }
 
     override fun onPermissionResult(granted: Boolean) {
+        Log.d(tag, "[onPermissionResult] granted == $granted")
        if (granted) {
            enableLocation()
+       } else {
+           //TODO open a dialogue with the user
        }
     }
 
     @SuppressWarnings("MissingPermission")
     private fun initLocationEngine() {
         locationEngine = LocationEngineProvider(this).obtainBestLocationEngineAvailable()
+        locationEngine?.interval = 5000 // preferably every 5 seconds
+        locationEngine?.fastestInterval = 1000 // at most every second
         locationEngine?.priority = LocationEnginePriority.HIGH_ACCURACY
         locationEngine?.activate()
 
@@ -111,10 +142,18 @@ class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineLis
 
     @SuppressWarnings("MissingPermission")
     private fun initLocationLayer() {
-        locationLayerPlugin = LocationLayerPlugin(mapView, map, locationEngine)
-        locationLayerPlugin?.setLocationLayerEnabled(true)
-        locationLayerPlugin?.cameraMode = CameraMode.TRACKING
-        locationLayerPlugin?.renderMode = RenderMode.NORMAL
+        if (mapView == null) {
+            Log.d(tag, "mapView is null")
+        } else {
+            if (map == null) {
+                Log.d(tag, "map is null")
+            } else {
+                locationLayerPlugin = LocationLayerPlugin(mapView, map, locationEngine)
+                locationLayerPlugin?.setLocationLayerEnabled(true)
+                locationLayerPlugin?.cameraMode = CameraMode.TRACKING
+                locationLayerPlugin?.renderMode = RenderMode.NORMAL
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -122,7 +161,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener, LocationEngineLis
     }
 
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
-        //Present a toast to explain why they need accesss
+        Log.d(tag, "Permission: $permissionsToExplain")
+        // TODO present popup message or dialog
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
