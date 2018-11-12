@@ -18,8 +18,6 @@ class RetrofitClient {
     lateinit var geometryList : ArrayList<Geometry>
     lateinit var pointList : ArrayList<Point>
     lateinit var coordinatesList : ArrayList<List<Double>>
-    val gson = GsonBuilder().setPrettyPrinting().create()
-
 
     fun updatedURL(baseURL: String) : String {
 
