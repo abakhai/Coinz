@@ -32,13 +32,12 @@ import kotlinx.android.synthetic.main.content_main.*
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListener, LocationEngineListener {
     private lateinit var mapView : MapView
 
+    private var map : MapboxMap? = null
+
     private var tag = "MainActivity"
 
     private var downloadDate = ""// Format: YYYY/MM/DD
     private val preferencesFile = "MyPrefsFile" // for storing preferences
-
-    //For user location
-    private lateinit var map : MapboxMap
 
     private lateinit var permissionManager: PermissionsManager
     private lateinit var originLocation : Location
@@ -70,20 +69,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         }
     }
 
+
     override fun onMapReady(mapboxMap: MapboxMap?) {
         if (mapboxMap == null) {
             Log.d(tag, "[onMapReady mapboxMap is null")
         } else {
             map = mapboxMap
             //Set user interface options
-            map.uiSettings.isCompassEnabled = true
-            map.uiSettings.isZoomControlsEnabled = true
+            map?.uiSettings?.isCompassEnabled = true
+            map?.uiSettings?.isZoomControlsEnabled = true
             //TODO see if its ok without the ? like in the lecture
 
             //Make location information available
             enableLocation()
+            AddMarkers().addMarkers(map)
         }
     }
+
 
     private fun enableLocation() {
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
@@ -140,7 +142,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     }
 
     private fun setCameraPostition(location : Location) {
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom
+        map?.animateCamera(CameraUpdateFactory.newLatLngZoom
         (LatLng(location.latitude, location.longitude),13.0 ))
 
     }
@@ -153,7 +155,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
             if (map == null) {
                 Log.d(tag, "map is null")
             } else {
-                locationLayerPlugin = LocationLayerPlugin(mapView, map, locationEngine)
+                locationLayerPlugin = LocationLayerPlugin(mapView, map!!, locationEngine)
                 locationLayerPlugin?.setLocationLayerEnabled(true)
                 locationLayerPlugin?.cameraMode = CameraMode.TRACKING
                 locationLayerPlugin?.renderMode = RenderMode.NORMAL

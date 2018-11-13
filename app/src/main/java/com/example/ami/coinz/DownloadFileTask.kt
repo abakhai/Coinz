@@ -4,6 +4,7 @@ import android.os.AsyncTask
 import com.example.ami.coinz.DownloadCompleteRunner.result
 import java.io.IOException
 import java.io.InputStream
+import java.net.HttpURLConnection
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
@@ -28,7 +29,7 @@ AsyncTask<String, Void, String>() {
     @Throws(IOException::class)
     private fun downloadUrl(urlString: String): InputStream {
         val url = URL(urlString)
-        val conn = url.openConnection() as HttpsURLConnection
+        val conn = url.openConnection() as HttpURLConnection
         //Also available: HttpsURLconnection
         conn.readTimeout = 10000 // miliseconds
         conn.connectTimeout = 15000 // miliseonds
