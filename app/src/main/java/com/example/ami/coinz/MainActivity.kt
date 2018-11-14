@@ -1,5 +1,7 @@
 package com.example.ami.coinz
 
+
+//TODO clean up all the code, make dfferent function for each step
 import android.content.Context
 import android.location.Location
 import android.os.Bundle
@@ -15,8 +17,12 @@ import com.mapbox.android.core.location.LocationEnginePriority
 import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.Icon
 import com.mapbox.mapboxsdk.annotations.IconFactory
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdate
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -26,27 +32,27 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListener, LocationEngineListener {
     private lateinit var mapView : MapView
 
+    private val context : Context = this
     private var map : MapboxMap? = null
 
     private var tag = "MainActivity"
 
-   // var title = getString(R.string.maker_title)
-   // var snippet = getString(R.string.marker_snippet)
-
- //   var IF = IconFactory.getInstance(this)
-
-   // var iconB = IF.fromResource(R.drawable.marker_blue)
-  //  var iconG = IF.fromResource(R.drawable.marker_green)
- //   var iconR = IF.fromResource(R.drawable.marker_red)
- //   var iconY = IF.fromResource(R.drawable.marker_yellow)
-
+    private val BASE_URL = "http://homepages.inf.ed.ac.uk/stg/coinz/"
+    lateinit var updatedURL : String
+    private val endOfUrl: String = "/coinzmap.geojson"
 
     private var downloadDate = ""// Format: YYYY/MM/DD
     private val preferencesFile = "MyPrefsFile" // for storing preferences
@@ -61,17 +67,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        Mapbox.getInstance(this, getString(R.string.access_key))
-        //changed it from applicationcontext TODO remove comment
+        Mapbox.getInstance(applicationContext, getString(R.string.access_key))
+        //changed it from applicationcontext to this and now back TODO remove comment
         mapView = findViewById(R.id.mapboxMapView)
         mapView.onCreate(savedInstanceState)
-//        mapView.getMapAsync { mapboxMap ->
-//            map = mapboxMap
-//            enableLocation()
-//        }
         mapView.getMapAsync(this)
-
-
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         }
     }
 
+//TODO clean up the app
 
     override fun onMapReady(mapboxMap: MapboxMap?) {
         if (mapboxMap == null) {
@@ -93,10 +94,96 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
             //Make location information available
             enableLocation()
             //AddMarkers().addMarkers(map, title, snippet, iconB, iconG, iconR, iconY)
-            AddMarkers().addMarkers(map)
+            addMarkers(map)
             //Todo make this better
         }
     }
+
+    fun updatedURL(baseURL: String) : String {
+
+
+        var current = LocalDateTime.now()
+        var formattedDate = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+        var now = current.format(formattedDate)
+
+
+        var dateString = now
+        updatedURL = baseURL + dateString + endOfUrl
+
+
+        return updatedURL
+    }
+
+
+    fun addMarkers(map : MapboxMap?) {
+
+        val IF = IconFactory.getInstance(applicationContext)
+        var json = DownloadFileTask(DownloadCompleteRunner).execute(updatedURL(BASE_URL)).get()
+
+        var iconB = IF.fromResource(R.drawable.marker_blue)
+        var iconG = IF.fromResource(R.drawable.marker_green)
+        var iconR = IF.fromResource(R.drawable.marker_red)
+        var iconY = IF.fromResource(R.drawable.marker_yellow)
+        var icon = iconY
+
+        var FeatureCollection = FeatureCollection.fromJson(json)
+        var FeatureList = FeatureCollection.features()
+        var featureSize = FeatureList?.size as Int
+        var jsonObject = JSONObject(json)
+        var ratesObject = jsonObject.getJSONObject("rates")
+        var DOLR = ratesObject.getString("DOLR")
+        var SHIL = ratesObject.getString("SHIL")
+        var PENY = ratesObject.getString("PENY")
+        var QUID = ratesObject.getString("QUID")
+
+        for (index in 0..featureSize-1) {
+            var feature = FeatureList[index]
+            var geo = feature.geometry()
+            var point = geo as Point
+            var coords = point.coordinates()
+            var currency = feature.properties()?.get("currency").toString().replace("\"", "")
+            var value = feature.properties()?.get("marker-symbol")
+            var snip = 4
+
+            //TOdo make this better
+
+            //Default yellow for quid
+            if (currency == "DOLR") {
+                icon = iconG
+                //snip = DOLR * value
+
+
+            } else if (currency == "SHIL") {
+
+                icon = iconB
+              //  snip = SHIL * value
+
+            } else if (currency == "PENY") {
+
+                icon = iconR
+               // snip = PENY * value
+            } else {
+                icon = iconY
+              //  snip = QUID * value
+            }
+
+
+            map?.addMarker(
+                    MarkerOptions()
+                            .title(getString(R.string.maker_title, currency))
+                            .snippet(getString(R.string.marker_snippet, value))
+                            .icon(icon)
+                            .position(LatLng(coords[1],coords[0]))
+
+            )
+        }
+
+    }
+
+
+
+
+
 
 
     private fun enableLocation() {

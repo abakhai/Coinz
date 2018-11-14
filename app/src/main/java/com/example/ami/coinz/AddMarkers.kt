@@ -20,9 +20,8 @@ class AddMarkers {
     private val BASE_URL = "http://homepages.inf.ed.ac.uk/stg/coinz/"
     lateinit var updatedURL : String
     private val endOfUrl: String = "/coinzmap.geojson"
-    lateinit var geometryList : ArrayList<Geometry>
-    lateinit var pointList : ArrayList<Point>
-    lateinit var coordinatesList : ArrayList<List<Double>>
+    //var IF = IconFactory.getInstance()
+
 
 
 
@@ -48,6 +47,7 @@ class AddMarkers {
    // fun addMarkers(map : MapboxMap?, title : String, snippet : String, iconB : Icon, iconG : Icon, iconR : Icon, iconY : Icon) {
    fun addMarkers(map : MapboxMap?) {
 
+
         var FeatureCollection = FeatureCollection.fromJson(DownloadFileTask(DownloadCompleteRunner).execute(updatedURL(BASE_URL)).get()) //updatedURL(BASE_URL) //"http://homepages.inf.ed.ac.uk/stg/coinz/2018/11/12/coinzmap.geojson"
         var FeatureList = FeatureCollection.features()
         var featureSize = FeatureList?.size as Int
@@ -58,7 +58,8 @@ class AddMarkers {
             var point = geo as Point
             var coords = point.coordinates()
             map?.addMarker(
-                    MarkerOptions().position(LatLng(coords[1],coords[0]))
+                    MarkerOptions()
+                            .position(LatLng(coords[1],coords[0]))
             )
         }
 
@@ -66,3 +67,5 @@ class AddMarkers {
 
 
 }
+
+//TODO do it with this class
