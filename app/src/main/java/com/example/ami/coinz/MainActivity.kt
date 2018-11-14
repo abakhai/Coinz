@@ -16,6 +16,7 @@ import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.camera.CameraUpdate
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -35,6 +36,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     private var map : MapboxMap? = null
 
     private var tag = "MainActivity"
+
+   // var title = getString(R.string.maker_title)
+   // var snippet = getString(R.string.marker_snippet)
+
+ //   var IF = IconFactory.getInstance(this)
+
+   // var iconB = IF.fromResource(R.drawable.marker_blue)
+  //  var iconG = IF.fromResource(R.drawable.marker_green)
+ //   var iconR = IF.fromResource(R.drawable.marker_red)
+ //   var iconY = IF.fromResource(R.drawable.marker_yellow)
+
 
     private var downloadDate = ""// Format: YYYY/MM/DD
     private val preferencesFile = "MyPrefsFile" // for storing preferences
@@ -61,8 +73,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
 
 
-
-
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
@@ -82,7 +92,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
             //Make location information available
             enableLocation()
+            //AddMarkers().addMarkers(map, title, snippet, iconB, iconG, iconR, iconY)
             AddMarkers().addMarkers(map)
+            //Todo make this better
         }
     }
 
