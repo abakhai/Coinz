@@ -31,7 +31,7 @@ class AddMarkers {
         var now = Calendar.getInstance()
         var y = now.get(Calendar.YEAR)
         var year = y.toString()
-        var m = now.get(Calendar.MONTH)
+        var m = now.get(Calendar.MONTH) //wrong
         var month = m.toString()
         var d = now.get(Calendar.DAY_OF_MONTH)
         var day = d.toString()
