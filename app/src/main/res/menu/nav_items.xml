@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.ami.coinz.MainActivity">
+
+    <item
+        android:icon="@drawable/home"
+        android:title="@string/nav_home" />
+    <item
+        android:icon="@drawable/map"
+        android:title="@string/nav_map" />
+    <item
+        android:icon="@drawable/wallet"
+        android:title="@string/nav_wallet" />
+    <item
+        android:icon="@drawable/bank"
+        android:title="@string/nav_bank" />
+    <item
+        android:icon="@drawable/transfer"
+        android:title="@string/nav_transfer" />
+</menu>
