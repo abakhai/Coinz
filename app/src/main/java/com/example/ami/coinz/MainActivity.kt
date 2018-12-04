@@ -188,7 +188,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
             var point = geo as Point
             var coords = point.coordinates()
             var currency = feature.properties()?.get("currency").toString().replace("\"", "")
-            var value = feature.properties()?.get("marker-symbol")
+            var value = feature.properties()?.get("marker-symbol").toString().replace("\"", "")
             var snip = 4
 
             //TOdo make this better
