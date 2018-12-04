@@ -73,10 +73,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
 
-        fab.setOnClickListener { view ->
+        /*fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
-        }
+        }*/
     }
 
 //TODO clean up the app
@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
             map = mapboxMap
             //Set user interface options
             map?.uiSettings?.isCompassEnabled = true
-            map?.uiSettings?.isZoomControlsEnabled = true
+            //map?.uiSettings?.isZoomControlsEnabled = true
             //TODO see if its ok without the ? like in the lecture
 
             //Make location information available
