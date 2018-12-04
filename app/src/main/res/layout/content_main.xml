@@ -9,14 +9,22 @@
     tools:context="com.example.ami.coinz.MainActivity"
     tools:showIn="@layout/activity_main">
 
-
+<FrameLayout
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+</FrameLayout>
 
     <android.support.design.widget.BottomNavigationView
+        android:id="@+id/navBar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/nav_items">
+        app:itemBackground="@color/colorPrimary"
+        app:itemIconTint="@color/colorWhite"
+        app:menu="@menu/nav_items"
+        app:itemTextColor="@color/colorWhite">
     </android.support.design.widget.BottomNavigationView>
 
 

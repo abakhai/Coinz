@@ -4,18 +4,23 @@
     tools:context="com.example.ami.coinz.MainActivity">
 
     <item
+        android:id="@+id/homenav"
         android:icon="@drawable/home"
         android:title="@string/nav_home" />
     <item
+        android:id="@+id/mapnav"
         android:icon="@drawable/map"
         android:title="@string/nav_map" />
     <item
+        android:id="@+id/walletnav"
         android:icon="@drawable/wallet"
         android:title="@string/nav_wallet" />
     <item
+        android:id="@+id/banknav"
         android:icon="@drawable/bank"
         android:title="@string/nav_bank" />
     <item
+        android:id="@+id/transfernav"
         android:icon="@drawable/transfer"
         android:title="@string/nav_transfer" />
 </menu>
