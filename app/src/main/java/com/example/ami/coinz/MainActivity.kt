@@ -9,11 +9,14 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.Snackbar
+import android.support.v4.app.NavUtils
+import android.support.v4.app.TaskStackBuilder
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import com.google.firebase.auth.FirebaseAuth
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
@@ -48,6 +51,7 @@ import java.util.*
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListener, LocationEngineListener {
     private lateinit var mapView : MapView
 
+    private var mAuth: FirebaseAuth? = null
     lateinit var toolba: ActionBar
     private val context : Context = this
     private var map : MapboxMap? = null
@@ -75,6 +79,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         toolba = supportActionBar!!
         val bottomNavigation : BottomNavigationView = findViewById(R.id.navBar)
 
+        mAuth = FirebaseAuth.getInstance()
         Mapbox.getInstance(applicationContext, getString(R.string.access_key))
         //changed it from applicationcontext to this and now back TODO remove comment
         mapView = findViewById(R.id.mapboxMapView)
@@ -316,27 +321,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         Log.d(tag, "Permission: $permissionsToExplain")
         // TODO present popup message or dialog
     }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
+    
 
     @SuppressWarnings("MissingPermission")
     override fun onStart() {
         super.onStart()
 
+        if (mAuth?.currentUser == null) {
+            var intentlog = Intent(this, FirebaseUIActivity::class.java)
+            startActivity(intentlog)
+        } else {
+
+            Log.d(tag, "Someone is logged in" )
+        }
         //Restore preferences
         val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
 
