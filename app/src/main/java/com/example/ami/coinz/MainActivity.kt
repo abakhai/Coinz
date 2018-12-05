@@ -321,7 +321,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         Log.d(tag, "Permission: $permissionsToExplain")
         // TODO present popup message or dialog
     }
-    
+
 
     @SuppressWarnings("MissingPermission")
     override fun onStart() {

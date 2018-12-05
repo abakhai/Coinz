@@ -40,20 +40,6 @@ class FirebaseUIActivity : AppCompatActivity(), View.OnClickListener {
         updateUI(auth.currentUser)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == RC_SIGN_IN) {
-            if (resultCode == Activity.RESULT_OK) {
-                // Sign in succeeded
-                updateUI(auth.currentUser)
-            } else {
-                // Sign in failed
-                Toast.makeText(this, "Sign In Failed", Toast.LENGTH_SHORT).show()
-                updateUI(null)
-            }
-        }
-    }
 
     private fun startSignIn() {
         // Build FirebaseUI sign in intent. For documentation on this operation and all
