@@ -13,6 +13,8 @@ import android.view.Menu
 import android.view.MenuItem
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.maps.MapboxMap
 
@@ -20,6 +22,8 @@ class HomeActivity : AppCompatActivity() {
 
     private var mAuth: FirebaseAuth? = null
     private var tag = "HomeActivity"
+    private var firestore: FirebaseFirestore? = null
+    private var firestoreUser: DocumentReference? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

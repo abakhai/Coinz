@@ -17,6 +17,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
@@ -59,6 +61,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
     private var tag = "MainActivity"
 
+    private var firestore: FirebaseFirestore? = null
+    private var firestoreUser: DocumentReference? = null
 
     private var coinsList = ArrayList<Coin>()
     private val BASE_URL = "http://homepages.inf.ed.ac.uk/stg/coinz/"
