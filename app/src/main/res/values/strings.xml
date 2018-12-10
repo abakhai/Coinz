@@ -28,6 +28,10 @@
     <string name="level">You are playing %1$s mode</string>
     <string name="calories">You have burnt %1$d calories</string>
     <string name="title_activity_login">Sign In</string>
+    <string name="easy">EASY</string>
+    <string name="med">MEDIUM</string>
+    <string name="hard">HARD</string>
+    <string name="welcome">This is Coinz and you are playing in %1$s mode</string>
 
 
     <!-- Strings related to login -->

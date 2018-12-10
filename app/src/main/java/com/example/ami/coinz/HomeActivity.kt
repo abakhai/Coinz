@@ -11,7 +11,9 @@ import android.support.v4.app.TaskStackBuilder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
@@ -32,6 +34,10 @@ class HomeActivity : AppCompatActivity() {
     private var firestore: FirebaseFirestore? = null
     private var firestoreUser: DocumentReference? = null
 
+    object DataHome {
+        var mode = "EASY"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
@@ -45,21 +51,34 @@ class HomeActivity : AppCompatActivity() {
         var menuItem = menu.getItem(0)
         menuItem.setChecked(true)
 
+        val btn_click : Button = findViewById(R.id.button3)
+        // set on-click listener
+        btn_click.setOnClickListener {
+            Toast.makeText(this, "You clicked HARD", Toast.LENGTH_SHORT).show()
+            DataHome.mode = "HARD"
+        }
 
-       // var textView : TextView = findViewById(R.id.tv)
-        //var textView1 : TextView = findViewById(R.id.tv1)
-        //var textView2 : TextView = findViewById(R.id.tv2)
-        //var textView3: TextView = findViewById(R.id.tv3)
-        //var textView4 : TextView = findViewById(R.id.tv4)
-        //var textView5 : TextView = findViewById(R.id.tv5)
+        // get reference to button
+        val btn_click_me : Button = findViewById(R.id.button)
+        // set on-click listener
+        btn_click_me.setOnClickListener {
+            Toast.makeText(this, "You clicked MEDIUM", Toast.LENGTH_SHORT).show()
+            DataHome.mode = "MEDIUM"
+        }
+
+        val btn : Button = findViewById(R.id.button2)
+        // set on-click listener
+        btn.setOnClickListener {
+        Toast.makeText(this, "You clicked EASY", Toast.LENGTH_SHORT).show()
+            DataHome.mode = "EASY"
+        }
+
+
+       var textView : TextView = findViewById(R.id.tv)
 
         //Setting the text from the strings.xml file.
-        //textView.text = resources.getString(R.string.wallet, MainActivity.Data.wallet.size)
-        //textView1.text = resources.getString(R.string.bank, 0)
-        //textView2.text = resources.getString(R.string.colorD)
-        //textView3.text = resources.getString(R.string.colorS)
-        //textView4.text = resources.getString(R.string.colorP)
-        //textView5.text = resources.getString(R.string.colorQ)
+        textView.text = resources.getString(R.string.welcome, DataHome.mode)
+
 
 
 

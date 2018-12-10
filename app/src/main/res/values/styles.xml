@@ -62,6 +62,9 @@
         <item name="android:textSize">36sp</item>
     </style>
 
-
+    <style name="ThemeOverlay.MyText" parent="AppTheme">
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textSize">36sp</item>
+    </style>
 
 </resources>
