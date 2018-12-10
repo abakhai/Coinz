@@ -316,12 +316,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
              var loc = Location("map")
 
+            var distance = 20
+            if (HomeActivity.DataHome.mode.equals("EASY")) {
+                distance = 70
+            } else if (HomeActivity.DataHome.mode.equals("MEDIUM")) {
+                distance = 35
+            }
+
             for (c in Data.coinsList) {
                 loc.latitude = c.coord[1]
                 loc.longitude = c.coord[0]
 
-            if (originLocation.distanceTo(loc) <= 25) {
+
+            if (originLocation.distanceTo(loc) <= distance) {
                 Data.coinlist.add(c)
+
                 if (!Data.wallet.contains(c)) {
                     Data.wallet.add(c)
                 }
