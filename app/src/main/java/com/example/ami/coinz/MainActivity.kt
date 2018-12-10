@@ -9,11 +9,18 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.Snackbar
+import android.support.v4.app.NavUtils
+import android.support.v4.app.TaskStackBuilder
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
@@ -44,15 +51,26 @@ import kotlinx.android.synthetic.main.content_main.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListener, LocationEngineListener {
     private lateinit var mapView : MapView
 
+    private var mAuth: FirebaseAuth? = null
     lateinit var toolba: ActionBar
     private val context : Context = this
+
     private var map : MapboxMap? = null
 
     private var tag = "MainActivity"
+    val db = FirebaseFirestore.getInstance()
+
+
+    lateinit var users : ArrayList<String>
+
+    private var firestore: FirebaseFirestore? = null
+    private var firestoreUser: DocumentReference? = null
 
     private val BASE_URL = "http://homepages.inf.ed.ac.uk/stg/coinz/"
     lateinit var updatedURL : String
@@ -66,6 +84,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     private var locationEngine : LocationEngine? = null
     private var retro : RetrofitClient? = null
 
+    object Data {
+        var wallet = ArrayList<Coin>()
+        var coinsList = ArrayList<Coin>()
+        var coinlist = ArrayList<Coin>()
+
+        var DOLR = 0f
+        var SHIL = 0f
+        var PENY = 0f
+        var QUID = 0f
+    }
+
     private var locationLayerPlugin : LocationLayerPlugin? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,6 +104,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         toolba = supportActionBar!!
         val bottomNavigation : BottomNavigationView = findViewById(R.id.navBar)
 
+        mAuth = FirebaseAuth.getInstance()
         Mapbox.getInstance(applicationContext, getString(R.string.access_key))
         //changed it from applicationcontext to this and now back TODO remove comment
         mapView = findViewById(R.id.mapboxMapView)
@@ -140,31 +170,66 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
             //Make location information available
             enableLocation()
             //AddMarkers().addMarkers(map, title, snippet, iconB, iconG, iconR, iconY)
-            addMarkers(map)
+            getJson()
             //Todo make this better
         }
     }
 
-    fun updatedURL(baseURL: String) : String {
 
+    fun getJson() {
 
         var current = LocalDateTime.now()
         var formattedDate = DateTimeFormatter.ofPattern("yyyy/MM/dd")
         var now = current.format(formattedDate)
 
+        if (now != downloadDate) {
 
-        var dateString = now
-        updatedURL = baseURL + dateString + endOfUrl
+            downloadDate = now
+
+            Log.d(tag, "[if 182] check date $now yo $downloadDate yes")
 
 
-        return updatedURL
+            var dateString = now
+
+            Log.d(tag, "[if 187] check date $now yo $downloadDate yes")
+            updatedURL = BASE_URL + dateString + endOfUrl
+            var json = DownloadFileTask(DownloadCompleteRunner).execute(updatedURL).get()
+
+            var FeatureCollection = FeatureCollection.fromJson(json)
+            var FeatureList = FeatureCollection.features()
+            var featureSize = FeatureList?.size as Int
+            var jsonObject = JSONObject(json)
+            var ratesObject = jsonObject.getJSONObject("rates")
+            Data.DOLR = ratesObject.getString("DOLR").toFloat()
+            Data.SHIL = ratesObject.getString("SHIL").toFloat()
+            Data.PENY = ratesObject.getString("PENY").toFloat()
+            Data.QUID = ratesObject.getString("QUID").toFloat()
+
+            for (index in 0..featureSize - 1) {
+                var feature = FeatureList[index]
+                var geo = feature.geometry()
+                var point = geo as Point
+                var id = feature.properties()?.get("id").toString().replace("\"", "")
+                var coords = point.coordinates()
+                var currency = feature.properties()?.get("currency").toString().replace("\"", "")
+                var value = feature.properties()?.get("marker-symbol").toString().replace("\"", "")
+                var exactval = feature.properties()?.get("value").toString().replace("\"", "")
+                Data.coinsList?.add(Coin(id, coords, currency, exactval))
+
+            }
+        }
+        var check = Data.coinsList.size
+        var che = Data.coinlist.size
+        var c = Data.wallet.size
+        Log.d(tag, "[coinsList] check at getJson coinsL $check  coinl $che wallet $c")
+        addMarkers(map, Data.coinsList)
+
+
     }
 
-
-    fun addMarkers(map : MapboxMap?) {
-
+    fun addMarkers(map : MapboxMap?, coins : ArrayList<Coin>) {
+        map?.removeAnnotations()
         val IF = IconFactory.getInstance(applicationContext)
-        var json = DownloadFileTask(DownloadCompleteRunner).execute(updatedURL(BASE_URL)).get()
 
         var iconB = IF.fromResource(R.drawable.marker_blue)
         var iconG = IF.fromResource(R.drawable.marker_green)
@@ -172,24 +237,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         var iconY = IF.fromResource(R.drawable.marker_yellow)
         var icon = iconY
 
-        var FeatureCollection = FeatureCollection.fromJson(json)
-        var FeatureList = FeatureCollection.features()
-        var featureSize = FeatureList?.size as Int
-        var jsonObject = JSONObject(json)
-        var ratesObject = jsonObject.getJSONObject("rates")
-        var DOLR = ratesObject.getString("DOLR")
-        var SHIL = ratesObject.getString("SHIL")
-        var PENY = ratesObject.getString("PENY")
-        var QUID = ratesObject.getString("QUID")
+        for (index in 0..((coins.size)-1)) {
 
-        for (index in 0..featureSize-1) {
-            var feature = FeatureList[index]
-            var geo = feature.geometry()
-            var point = geo as Point
-            var coords = point.coordinates()
-            var currency = feature.properties()?.get("currency").toString().replace("\"", "")
-            var value = feature.properties()?.get("marker-symbol").toString().replace("\"", "")
-            var snip = 4
+            var coin = coins[index]
+            var currency = coin.curr
+            var coords = coin.coord
+            var value = coin.value
 
             //TOdo make this better
 
@@ -202,15 +255,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
             } else if (currency == "SHIL") {
 
                 icon = iconB
-              //  snip = SHIL * value
+                //  snip = SHIL * value
 
             } else if (currency == "PENY") {
 
                 icon = iconR
-               // snip = PENY * value
+                // snip = PENY * value
             } else {
                 icon = iconY
-              //  snip = QUID * value
+                //  snip = QUID * value
             }
 
 
@@ -219,12 +272,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
                             .title(getString(R.string.maker_title, currency))
                             .snippet(getString(R.string.marker_snippet, value))
                             .icon(icon)
-                            .position(LatLng(coords[1],coords[0]))
+                            .position(LatLng(coords[1], coords[0]))
 
             )
+
+        }
         }
 
-    }
+
 
 
 
@@ -256,6 +311,41 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
         } else {
             originLocation = location
+            var userId = mAuth?.currentUser?.uid as String
+            var hm = HashMap<String, Any>()
+
+             var loc = Location("map")
+
+            for (c in Data.coinsList) {
+                loc.latitude = c.coord[1]
+                loc.longitude = c.coord[0]
+
+            if (originLocation.distanceTo(loc) <= 25) {
+                Data.coinlist.add(c)
+                if (!Data.wallet.contains(c)) {
+                    Data.wallet.add(c)
+                }
+                var check = Data.coinlist.size
+                var che = Data.wallet.size
+                Log.d(tag, "[coinlist] check coinlist and wallet $check $che")
+
+            }
+
+        }
+            for (coin in Data.coinlist) {
+
+                    Data.coinsList.remove(coin)
+                    hm["currency"] = coin.curr
+                    hm["value"] = (coin.value).toFloat()
+                    var id = coin.id
+                    var check = Data.coinsList.size
+                    Log.d(tag, "[coinsList] check after remove $check ")
+                  db.document("User/$userId/Wallet/Coin/IDs/$id").set(hm)
+
+
+            }
+
+            addMarkers(map, Data.coinsList)
             setCameraPostition(originLocation)
         }
     }
@@ -317,39 +407,48 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         // TODO present popup message or dialog
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
 
     @SuppressWarnings("MissingPermission")
     override fun onStart() {
         super.onStart()
 
+        if (mAuth?.currentUser == null) {
+            var intentlog = Intent(this, FirebaseUIActivity::class.java)
+            startActivity(intentlog)
+        } else {
+
+            Log.d(tag, "Someone is logged in" )
+        }
         //Restore preferences
         val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
 
         //use "" as the default value (this might be the first time the app is run)
         downloadDate = settings.getString("lastDownloadDate", "")
-
         //Write a message to "logcat" (for debugging purposes)
         Log.d(tag, "[onStart] Recalled lastDownloadDate is $downloadDate" )
+        Data.SHIL  = settings.getFloat("SHIL", 1f)
+        Data.DOLR  = settings.getFloat("DOLR", 1f)
+        Data.PENY  = settings.getFloat("PENY", 1f)
+        Data.QUID  = settings.getFloat("QUID", 1f)
 
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
             locationEngine?.requestLocationUpdates()
             locationLayerPlugin?.onStart()
         }
+        val gson = Gson()
+        val json = settings.getString("Coins list", "")
+        val jsonwallet = settings.getString("Wallet", "")
+        val type = object : TypeToken<List<Coin>>() {}.type
+        if (!json.isEmpty()) {
+            var coinList: List<Coin> = gson.fromJson<List<Coin>>(json, type)
+            Data.coinsList = ArrayList(coinList)
+        }
+        if (!jsonwallet.isEmpty()) {
+            var walet: List<Coin> = gson.fromJson<List<Coin>>(jsonwallet, type)
+            Data.wallet = ArrayList(walet)
+        }
+
+
         mapView.onStart()
     }
 
@@ -374,6 +473,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         //We need an Editor object to make preferences changes
         val editor = settings.edit()
         editor.putString("lastDownloadDate", downloadDate)
+        editor.putFloat("SHIL", Data.SHIL)
+        editor.putFloat("DOLR", Data.DOLR)
+        editor.putFloat("PENY", Data.PENY)
+        editor.putFloat("QUID", Data.QUID)
+        var gson = Gson()
+        var jsonwallet = gson.toJson(Data.wallet)
+        var json = gson.toJson(Data.coinsList)
+        editor.putString("Wallet", jsonwallet)
+        editor.putString("Coins list", json)
+        //https://stackoverflow.com/questions/14981233/android-arraylist-of-custom-objects-save-to-sharedpreferences-serializable?fbclid=IwAR0TkPyRYJXSszjDFuEGgtariSqLPO0R_TL1KgheJ8rZRk8AN-FNzVJDX2Q
         //Apply the edits!
         editor.apply()
 
