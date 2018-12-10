@@ -4,11 +4,14 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_firebase_ui.detail
 import kotlinx.android.synthetic.main.activity_firebase_ui.signInButton
 import kotlinx.android.synthetic.main.activity_firebase_ui.signOutButton
@@ -23,6 +26,16 @@ import kotlinx.android.synthetic.main.activity_firebase_ui.status
 class FirebaseUIActivity : AppCompatActivity(), View.OnClickListener {
 
     private lateinit var auth: FirebaseAuth
+    private var tag = "FBActivity"
+    // Access a Cloud Firestore instance from your Activity
+    val db = FirebaseFirestore.getInstance()
+    private var firestore: FirebaseFirestore? = null
+    private var firestoreUser: DocumentReference? = null
+
+    val hm = HashMap<String, Any>()
+
+   // var userId = auth.uid.toString()
+   // lateinit var users : ArrayList<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +43,7 @@ class FirebaseUIActivity : AppCompatActivity(), View.OnClickListener {
 
         // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
+
 
         signInButton.setOnClickListener(this)
         signOutButton.setOnClickListener(this)
@@ -61,6 +75,7 @@ class FirebaseUIActivity : AppCompatActivity(), View.OnClickListener {
 
             signInButton.visibility = View.GONE
             signOutButton.visibility = View.VISIBLE
+
 
             var intenthome = Intent(this, HomeActivity::class.java)
             startActivity(intenthome)

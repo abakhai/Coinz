@@ -11,17 +11,24 @@ import android.support.v4.app.TaskStackBuilder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.maps.MapboxMap
+import kotlinx.android.synthetic.main.activity_home.*
 
 class HomeActivity : AppCompatActivity() {
 
+    // Access a Cloud Firestore instance from your Activity
+    val db = FirebaseFirestore.getInstance()
     private var mAuth: FirebaseAuth? = null
     private var tag = "HomeActivity"
+    private val preferencesFile = "MyPrefsFile" // for storing preferences
     private var firestore: FirebaseFirestore? = null
     private var firestoreUser: DocumentReference? = null
 
@@ -37,6 +44,29 @@ class HomeActivity : AppCompatActivity() {
         var menu = bottomNavigation.getMenu()
         var menuItem = menu.getItem(0)
         menuItem.setChecked(true)
+
+
+       // var textView : TextView = findViewById(R.id.tv)
+        //var textView1 : TextView = findViewById(R.id.tv1)
+        //var textView2 : TextView = findViewById(R.id.tv2)
+        //var textView3: TextView = findViewById(R.id.tv3)
+        //var textView4 : TextView = findViewById(R.id.tv4)
+        //var textView5 : TextView = findViewById(R.id.tv5)
+
+        //Setting the text from the strings.xml file.
+        //textView.text = resources.getString(R.string.wallet, MainActivity.Data.wallet.size)
+        //textView1.text = resources.getString(R.string.bank, 0)
+        //textView2.text = resources.getString(R.string.colorD)
+        //textView3.text = resources.getString(R.string.colorS)
+        //textView4.text = resources.getString(R.string.colorP)
+        //textView5.text = resources.getString(R.string.colorQ)
+
+
+
+
+
+
+
 
     }
 
@@ -99,7 +129,8 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-
+        //Restore preferences
+        val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
         if (mAuth?.currentUser == null) {
             var intentlog = Intent(this, FirebaseUIActivity::class.java)
             startActivity(intentlog)
@@ -108,6 +139,20 @@ class HomeActivity : AppCompatActivity() {
             Log.d(tag, "Someone is logged in" )
         }
 
+        val gson = Gson()
+        val jsonwallet = settings.getString("Wallet", "")
+        val type = object : TypeToken<List<Coin>>() {}.type
+        if (!jsonwallet.isEmpty()) {
+            var walet: List<Coin> = gson.fromJson<List<Coin>>(jsonwallet, type)
+            MainActivity.Data.wallet = ArrayList(walet)
+        }
+        MainActivity.Data.SHIL  = settings.getFloat("SHIL", 1f)
+        MainActivity.Data.DOLR  = settings.getFloat("DOLR", 1f)
+        MainActivity.Data.PENY  = settings.getFloat("PENY", 1f)
+        MainActivity.Data.QUID  = settings.getFloat("QUID", 1f)
+
     }
+
+
 
 }

@@ -6,10 +6,13 @@
     android:layout_height="match_parent"
     tools:context="com.example.ami.coinz.WalletActivity">
 
-    <EditText
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_above="@id/navWBar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/action_settings"/>
+        android:layout_height="505dp"/>
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navWBar"
@@ -22,5 +25,17 @@
         app:itemTextColor="@color/colorWhite"
         app:menu="@menu/nav_items">
     </android.support.design.widget.BottomNavigationView>
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:foreground="@drawable/ic_action_name"
+
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
 
 </android.support.constraint.ConstraintLayout>

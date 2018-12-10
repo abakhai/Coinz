@@ -4,13 +4,31 @@
     <string name="log_out">Log Out</string>
     <string name="access_key">pk.eyJ1IjoiYWJha2hhaSIsImEiOiJjam4weDlxdGsxcDl3M2txbG4xNXY2NWV2In0.7tbxsNyPrP4OoZcLKwcSfg</string>
     <string name="marker_snippet">I am a coin, of value %1$s</string>
+    <string name="remaining">You have %1$d bank transfer remaining today</string>
     <string name="maker_title">%1$s</string>
     <string name="nav_home">Home</string>
     <string name="nav_map">Map</string>
     <string name="nav_wallet">Wallet</string>
     <string name="nav_bank">Bank</string>
     <string name="nav_transfer">Transfer</string>
-    <string name="title_activity_login">Sign in</string>
+    <string name="spare">Number of spare coins received today: %1$d</string>
+    <string name="colorD">DOLR colour is GREEN</string>
+    <string name="colorS">SHIL colour is BLUE</string>
+    <string name="colorP">PENY colour is RED</string>
+    <string name="colorQ">QUID colour is YELLOW</string>
+    <string name="rateQ">1 QUID is %1$d GOLD</string>
+    <string name="rateD">1 DOLR is %1$d GOLD</string>
+    <string name="rateP">1 PENY is %1$d GOLD</string>
+    <string name="rateS">1 SHIL is %1$d GOLD</string>
+    <string name="bank">You have %1$d GOLD in your bank</string>
+    <string name="wallet">You have %1$d coins in your wallet</string>
+    <string name="collectedCoins">You have collected %1$d coins</string>
+    <string name="banktrans">You have transfered %1$d coins to your bank</string>
+    <string name="trans">You have transfered %1$d coins to your friend</string>
+    <string name="level">You are playing %1$s mode</string>
+    <string name="calories">You have burnt %1$d calories</string>
+    <string name="title_activity_login">Sign In</string>
+
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
