@@ -322,6 +322,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
             } else if (HomeActivity.DataHome.mode.equals("MEDIUM")) {
                 distance = 35
             }
+            Data.coinlist.clear()
 
             for (c in Data.coinsList) {
                 loc.latitude = c.coord[1]
@@ -330,13 +331,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
             if (originLocation.distanceTo(loc) <= distance) {
                 Data.coinlist.add(c)
-
                 if (!Data.wallet.contains(c)) {
                     Data.wallet.add(c)
                 }
-                var check = Data.coinlist.size
-                var che = Data.wallet.size
-                Log.d(tag, "[coinlist] check coinlist and wallet $check $che")
+
 
             }
 
@@ -346,10 +344,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
                     Data.coinsList.remove(coin)
                     hm["currency"] = coin.curr
                     hm["value"] = (coin.value).toFloat()
+                    hm["id"] = coin.id
+                    hm["coord"] = coin.coord
                     var id = coin.id
                     var check = Data.coinsList.size
                     Log.d(tag, "[coinsList] check after remove $check ")
                   db.document("User/$userId/Wallet/Coin/IDs/$id").set(hm)
+
 
 
             }
@@ -446,17 +447,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         }
         val gson = Gson()
         val json = settings.getString("Coins list", "")
-        val jsonwallet = settings.getString("Wallet", "")
         val type = object : TypeToken<List<Coin>>() {}.type
         if (!json.isEmpty()) {
             var coinList: List<Coin> = gson.fromJson<List<Coin>>(json, type)
             Data.coinsList = ArrayList(coinList)
         }
-        if (!jsonwallet.isEmpty()) {
-            var walet: List<Coin> = gson.fromJson<List<Coin>>(jsonwallet, type)
-            Data.wallet = ArrayList(walet)
-        }
-
 
         mapView.onStart()
     }
@@ -487,9 +482,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         editor.putFloat("PENY", Data.PENY)
         editor.putFloat("QUID", Data.QUID)
         var gson = Gson()
-        var jsonwallet = gson.toJson(Data.wallet)
         var json = gson.toJson(Data.coinsList)
-        editor.putString("Wallet", jsonwallet)
         editor.putString("Coins list", json)
         //https://stackoverflow.com/questions/14981233/android-arraylist-of-custom-objects-save-to-sharedpreferences-serializable?fbclid=IwAR0TkPyRYJXSszjDFuEGgtariSqLPO0R_TL1KgheJ8rZRk8AN-FNzVJDX2Q
         //Apply the edits!

@@ -9,6 +9,9 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
+import android.widget.Button
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class WalletActivity : AppCompatActivity() {
@@ -18,8 +21,14 @@ class WalletActivity : AppCompatActivity() {
     private lateinit var viewManager: RecyclerView.LayoutManager
     val db = FirebaseFirestore.getInstance()
     val tag = "Wallet Activity"
+    private var mAuth: FirebaseAuth? = null
+    var hm = HashMap<String, Any>()
+    var dataset = ArrayList<Coin>()
 
-
+    object DataWallet {
+        var coinRemain = 25f
+        var count = 0
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_wallet)
@@ -31,11 +40,14 @@ class WalletActivity : AppCompatActivity() {
         var menuItem = menu.getItem(2)
         menuItem.setChecked(true)
 
+
+
         viewManager = LinearLayoutManager(this)
-        var dataset : ArrayList<Coin> =  MainActivity.Data.wallet
-        var check = dataset.size
-        Log.d(tag, "[onBindViewHolder] check $check")
-        viewAdapter = MyAdapter(dataset)
+
+        var data = MainActivity.Data.wallet
+        Log.d(tag," check 48 ${dataset}")
+        Log.d(tag," check 49 ${data}")
+        viewAdapter = MyAdapter(data)
         viewAdapter.notifyDataSetChanged()
 
         recyclerView = findViewById<RecyclerView>(R.id.recyclerView).apply {
@@ -48,15 +60,62 @@ class WalletActivity : AppCompatActivity() {
             // specify an viewAdapter (see also next example)
             adapter = viewAdapter }
 
+
         val fab: View = findViewById(R.id.fab)
         fab.setOnClickListener{ view ->
-            Snackbar.make(view, getString(R.string.remaining, 25), Snackbar.LENGTH_LONG)
+            Snackbar.make(view, getString(R.string.remaining, DataWallet.coinRemain.toInt()), Snackbar.LENGTH_LONG)
                     .setAction("tAction", null)
                     .show()
         }
 
 
     }
+
+
+
+    fun FromFirebase() : ArrayList<Coin>  {
+
+        var testarray : ArrayList<Coin> = ArrayList<Coin>()
+        mAuth = FirebaseAuth.getInstance()
+        var userId = mAuth?.currentUser?.uid as String
+
+        db.collection("User/$userId/Wallet/Coin/IDs")
+            .get()
+            .addOnSuccessListener { documents ->
+                Log.d(tag, "[walletactivity 84] check  ${documents.isEmpty}")
+                for (document in documents) {
+                    if (document != null) {
+                        Log.d(tag, "DocumentSnapshot data: ${document.data}")
+                    } else {
+                        Log.d(tag, "No such document")
+                    }
+                    var value = document.get("value").toString()
+                    var currency = document.get("currency").toString()
+                    var id = document.get("id").toString()
+                    var coord : List<Double> = listOf(0.0,0.0)
+
+                    var Coin = Coin(id, coord,currency,value)
+
+                    Log.d(tag, "[walletactivity 96] check  $Coin")
+                    dataset.add(Coin)
+                    testarray = dataset
+                    Log.d(tag, "[walletactivity 98] check  ${dataset}")
+                    Log.d(tag, "[walletactivity 99] check  ${testarray}")
+                }
+
+
+
+                Log.d(tag, "[walletactivity 106] check  ${testarray}")
+            }
+            .addOnFailureListener { exception ->
+                Log.d(tag, "get failed with ", exception)
+
+            }
+            Log.d(tag, "[walletactivity 111] check  ${testarray}")
+            return testarray
+    }
+
+
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {

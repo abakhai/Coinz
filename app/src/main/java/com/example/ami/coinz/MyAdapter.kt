@@ -1,11 +1,18 @@
 package com.example.ami.coinz
 
+import android.content.DialogInterface
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MyAdapter(private val myDataset: ArrayList<Coin>) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
@@ -15,7 +22,13 @@ class MyAdapter(private val myDataset: ArrayList<Coin>) :
     // you provide access to all the views for a data item in a view holder.
     // Each data item is just a string in this case that is shown in a TextView.
     val tag = "MyAdapter"
-
+    val db = FirebaseFirestore.getInstance()
+    private var mAuth: FirebaseAuth? = null
+    var hm = HashMap<String, Any>()
+    object DataAdapt {
+        var position = -1
+        var dataset = ArrayList<Coin>()
+    }
 
     // Replace the contents of a view (invoked by the layout manager)
 
@@ -25,6 +38,9 @@ class MyAdapter(private val myDataset: ArrayList<Coin>) :
         val text = itemView.findViewById<TextView>(R.id.textView)
         val textcurr = itemView.findViewById<TextView>(R.id.textViewCurr)
         val textgold = itemView.findViewById<TextView>(R.id.textViewGold)
+        val button = itemView.findViewById<Button>(R.id.buttonBank)
+
+
     }
 
 
@@ -42,6 +58,12 @@ class MyAdapter(private val myDataset: ArrayList<Coin>) :
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
+
+        mAuth = FirebaseAuth.getInstance()
+        var userId = mAuth?.currentUser?.uid as String
+        var id = myDataset[position].id
+
+
         holder.text.text = myDataset[position].value
         holder.textcurr.text = myDataset[position].curr
         var rates = myDataset[position].value.toFloat() * MainActivity.Data.QUID
@@ -61,6 +83,23 @@ class MyAdapter(private val myDataset: ArrayList<Coin>) :
         var check = myDataset[position].value
         var ch = myDataset[position].curr
         Log.d(tag, "[onBindViewHolder] check value $check curr $ch rate $c ")
+
+        if (WalletActivity.DataWallet.coinRemain > 0) {
+
+            holder.button.setOnClickListener {
+                WalletActivity.DataWallet.coinRemain = WalletActivity.DataWallet.coinRemain - 1
+                hm["GOLD"] = rates.toString()
+                db.document("User/$userId/Bank/Coin/IDs/$id").set(hm)
+                db.collection("User/$userId/Wallet/Coin/IDs").document("$id")
+                        .delete()
+                        .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
+                        .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
+                DataAdapt.position = holder.adapterPosition
+                MainActivity.Data.wallet.removeAt(DataAdapt.position)
+                notifyDataSetChanged()
+
+            }
+        }
     }
 
 

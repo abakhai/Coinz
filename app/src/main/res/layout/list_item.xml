@@ -30,6 +30,14 @@
                 android:text="@string/action_settings"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+            <Button
+                android:id="@+id/buttonBank"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/colorAccent"
+                android:text="@string/nav_bank"
+                android:textColor="@color/colorPrimaryDark"
+                android:theme="@style/ThemeOverlay.MyDarkButton"/>
 
         </LinearLayout>
 

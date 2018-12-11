@@ -21,8 +21,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.FeatureCollection
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import kotlinx.android.synthetic.main.activity_home.*
+import org.json.JSONObject
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class HomeActivity : AppCompatActivity() {
 
@@ -30,9 +34,13 @@ class HomeActivity : AppCompatActivity() {
     val db = FirebaseFirestore.getInstance()
     private var mAuth: FirebaseAuth? = null
     private var tag = "HomeActivity"
+    private val BASE_URL = "http://homepages.inf.ed.ac.uk/stg/coinz/"
+    lateinit var updatedURL : String
+    private val endOfUrl: String = "/coinzmap.geojson"
     private val preferencesFile = "MyPrefsFile" // for storing preferences
     private var firestore: FirebaseFirestore? = null
     private var firestoreUser: DocumentReference? = null
+    var count = 0
 
     object DataHome {
         var mode = "EASY"
@@ -44,6 +52,7 @@ class HomeActivity : AppCompatActivity() {
 
         mAuth = FirebaseAuth.getInstance()
 
+        count = 1
 
         val bottomNavigation : BottomNavigationView = findViewById(R.id.navHBar)
         bottomNavigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
@@ -148,6 +157,7 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
         //Restore preferences
         val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
         if (mAuth?.currentUser == null) {
@@ -158,13 +168,7 @@ class HomeActivity : AppCompatActivity() {
             Log.d(tag, "Someone is logged in" )
         }
 
-        val gson = Gson()
-        val jsonwallet = settings.getString("Wallet", "")
-        val type = object : TypeToken<List<Coin>>() {}.type
-        if (!jsonwallet.isEmpty()) {
-            var walet: List<Coin> = gson.fromJson<List<Coin>>(jsonwallet, type)
-            MainActivity.Data.wallet = ArrayList(walet)
-        }
+
         MainActivity.Data.SHIL  = settings.getFloat("SHIL", 1f)
         MainActivity.Data.DOLR  = settings.getFloat("DOLR", 1f)
         MainActivity.Data.PENY  = settings.getFloat("PENY", 1f)
