@@ -9,28 +9,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
-class MyAdapter(private val myDataset: ArrayList<Coin>) :
-        RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+class MyAdapterTrans(private val myDataset: ArrayList<Coin>) :
+        RecyclerView.Adapter<MyAdapterTrans.MyViewHolder>() {
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder.
     // Each data item is just a string in this case that is shown in a TextView.
-    val tag = "MyAdapter"
+    val tag = "MyAdapterTrans"
     val db = FirebaseFirestore.getInstance()
     private var mAuth: FirebaseAuth? = null
     var hm = HashMap<String, Any>()
-    var goldhm = HashMap<String, Any>()
-    object DataAdapt {
-        var position = -1
-        var gold = 0f
-    }
+    private var coinList = ArrayList<Coin>()
 
     // Replace the contents of a view (invoked by the layout manager)
 
@@ -40,10 +37,8 @@ class MyAdapter(private val myDataset: ArrayList<Coin>) :
         val text = itemView.findViewById<TextView>(R.id.textView)
         val textcurr = itemView.findViewById<TextView>(R.id.textViewCurr)
         val textgold = itemView.findViewById<TextView>(R.id.textViewGold)
-
-
-        val button = itemView.findViewById<Button>(R.id.buttonBank)
         val button1 = itemView.findViewById<Button>(R.id.buttonTrans)
+        val edit = itemView.findViewById<EditText>(R.id.edit)
 
 
     }
@@ -54,7 +49,7 @@ class MyAdapter(private val myDataset: ArrayList<Coin>) :
                                     viewType: Int): MyViewHolder {
         // create a new view
         val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.list_item, parent, false)
+                .inflate(R.layout.listtrans_item, parent, false)
         // set the view's size, margins, paddings and layout parameters
 
         return MyViewHolder(view)
@@ -67,6 +62,12 @@ class MyAdapter(private val myDataset: ArrayList<Coin>) :
         mAuth = FirebaseAuth.getInstance()
         var userId = mAuth?.currentUser?.uid as String
         var id = myDataset[position].id
+        var idTrans = myDataset[position].id + "tran"
+
+        Log.d(tag, "mainactivity transfer 66 ${MainActivity.Data.wallet.contains(myDataset[position])}  ${myDataset[position]}")
+
+
+        if (TransferActivity.DataTrans.listofId.contains(myDataset[position].id)) {
 
 
         holder.text.text = myDataset[position].value
@@ -85,66 +86,69 @@ class MyAdapter(private val myDataset: ArrayList<Coin>) :
         }
 
         holder.textgold.text = rates.toString()
-        var check = myDataset[position].value
-        var ch = myDataset[position].curr
-        Log.d(tag, "[onBindViewHolder] check value $check curr $ch rate $c ")
+
 
         holder.button1.setOnClickListener {
-            Log.d(tag, "mainactivity transfer 94 ${MainActivity.Data.wallet.contains(myDataset[position])}")
-
             hm["currency"] = myDataset[position].curr
-            hm["value"] = ( myDataset[position].value).toFloat()
-            hm["id"] =  myDataset[position].id
-            hm["coord"] =  myDataset[position].coord
-            db.document("User/$userId/Transfer/Coin/IDs/$id").set(hm)
-            Log.d(tag, "mainactivity transfer 101 ${MainActivity.Data.wallet.contains(myDataset[position])}")
+            hm["value"] = (myDataset[position].value).toFloat()
+            hm["id"] = myDataset[position].id
+            hm["coord"] = myDataset[position].coord
+            db.document("User/${holder.edit.text.toString()}/Wallet/Coin/IDs/$idTrans").set(hm)
+            db.collection("User/$userId/Wallet/Coin/IDs").document("$id")
+                    .delete()
+                    .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
+                    .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
+            db.collection("User/$userId/Transfer/Coin/IDs").document("$id")
+                    .delete()
+                    .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
+                    .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
 
+            MainActivity.Data.wallet.remove(myDataset[position])
+
+            Log.d(tag, "listofIds transfer 107 ${TransferActivity.DataTrans.listofId}  ${myDataset[position].id}")
+            TransferActivity.DataTrans.listofId.remove(myDataset[position].id)
+
+            Log.d(tag, "listofIds transfer 108 ${TransferActivity.DataTrans.listofId}  ${myDataset[position].id}")
+
+            coinList.clear()
+
+            for (coin in MainActivity.Data.wallet) {
+
+                Log.d(tag, "listofIds transfer 111 list of ids ${TransferActivity.DataTrans.listofId}  this coin id ${myDataset[position].id} the coin $coin the coin id ${coin.id}")
+                if (!TransferActivity.DataTrans.listofId.contains(coin.id)) {
+                    Log.d(tag, "mainactivity transfer before rem ${MainActivity.Data.wallet}  ${myDataset[position]}")
+                    coinList.add(coin)
+                    Log.d(tag, "mainactivity transfer after rem ${MainActivity.Data.wallet}  ${myDataset[position]}")
+                }
+                Log.d(tag, "listofIds transfer 114 ${TransferActivity.DataTrans.listofId}  ${myDataset[position].id}")
+            }
+
+
+            MainActivity.Data.wallet.removeAll(coinList)
+            Log.d(tag, "mainactivity transfer 118 ${MainActivity.Data.wallet.contains(myDataset[position])}  ${myDataset[position]}")
+            TransferActivity.DataTrans.ListofCoins.removeAt(holder.adapterPosition)
+            notifyDataSetChanged()
         }
 
-        if (WalletActivity.DataWallet.coinRemain > 0) {
 
-            holder.button.setOnClickListener {
-                WalletActivity.DataWallet.coinRemain = WalletActivity.DataWallet.coinRemain - 1
-
-                hm["GOLD"] = rates.toString()
-                db.document("User/$userId/Bank/Coin/IDs/$id").set(hm)
-
-                db.collection("User/$userId/Wallet/Coin/IDs").document("$id")
-                        .delete()
-                        .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
-                        .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
+        } else {
 
 
+            holder.textgold.text = ""
+            holder.text.text = ""
+            holder.textcurr.text = "You banked this coin"
+            holder.button1.setOnClickListener {
                 db.collection("User/$userId/Transfer/Coin/IDs").document("$id")
                         .delete()
                         .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
                         .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
 
-
-
-                db.collection("User/$userId/Bank").document("Gold")
-                        .delete()
-                        .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
-                        .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
-
-                DataAdapt.gold = rates + DataAdapt.gold
-                goldhm["GOLD"] = DataAdapt.gold
-                BankActivity.DataBank.gold = DataAdapt.gold.toString()
-                db.document("User/$userId/Bank/Gold").set(goldhm)
-
-                TransferActivity.DataTrans.ListofCoins.remove(myDataset[position])
-                DataAdapt.position = holder.adapterPosition
-                MainActivity.Data.wallet.removeAt(DataAdapt.position)
+                TransferActivity.DataTrans.ListofCoins.removeAt(holder.adapterPosition)
                 notifyDataSetChanged()
 
-
             }
+
         }
-
-
-        myDataset[position].coord = listOf(0.0,0.0)
-        Log.d(tag, "mainactivity transfer 144 ${MainActivity.Data.wallet.contains(myDataset[position])} ${myDataset[position]}")
-
     }
 
 

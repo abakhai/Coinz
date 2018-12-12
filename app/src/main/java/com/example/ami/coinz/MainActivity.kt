@@ -83,6 +83,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     private lateinit var originLocation : Location
     private var locationEngine : LocationEngine? = null
     private var retro : RetrofitClient? = null
+    private var uid = ""
+    private var prevuid = ""
 
     object Data {
         var wallet = ArrayList<Coin>()
@@ -105,6 +107,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         val bottomNavigation : BottomNavigationView = findViewById(R.id.navBar)
 
         mAuth = FirebaseAuth.getInstance()
+        prevuid = mAuth?.currentUser?.uid as String
         Mapbox.getInstance(applicationContext, getString(R.string.access_key))
         //changed it from applicationcontext to this and now back TODO remove comment
         mapView = findViewById(R.id.mapboxMapView)
@@ -182,8 +185,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         var formattedDate = DateTimeFormatter.ofPattern("yyyy/MM/dd")
         var now = current.format(formattedDate)
 
-        if (now != downloadDate) {
+        if (now != downloadDate || prevuid != mAuth?.currentUser?.uid) {
 
+            prevuid = mAuth?.currentUser?.uid as String
             downloadDate = now
 
             Log.d(tag, "[if 182] check date $now yo $downloadDate yes")
@@ -360,6 +364,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         }
     }
 
+
     override fun onPermissionResult(granted: Boolean) {
         Log.d(tag, "[onPermissionResult] granted == $granted")
        if (granted) {
@@ -429,9 +434,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
             Log.d(tag, "Someone is logged in" )
         }
+
         //Restore preferences
         val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
-
+        prevuid = settings.getString("prevuid", mAuth?.currentUser?.uid)
         //use "" as the default value (this might be the first time the app is run)
         downloadDate = settings.getString("lastDownloadDate", "")
         //Write a message to "logcat" (for debugging purposes)
@@ -468,6 +474,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     override fun onStop() {
         super.onStop()
 
+
         Log.d(tag, "[onStop] Storing lastDownloadDate of $downloadDate")
 
         //All objects are from android.context.Context
@@ -476,6 +483,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
         //We need an Editor object to make preferences changes
         val editor = settings.edit()
+        editor.putString("prevuid", prevuid)
         editor.putString("lastDownloadDate", downloadDate)
         editor.putFloat("SHIL", Data.SHIL)
         editor.putFloat("DOLR", Data.DOLR)

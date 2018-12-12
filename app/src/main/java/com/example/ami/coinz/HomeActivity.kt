@@ -34,6 +34,7 @@ class HomeActivity : AppCompatActivity() {
     val db = FirebaseFirestore.getInstance()
     private var mAuth: FirebaseAuth? = null
     private var tag = "HomeActivity"
+    private var downloadDate = ""
     private val BASE_URL = "http://homepages.inf.ed.ac.uk/stg/coinz/"
     lateinit var updatedURL : String
     private val endOfUrl: String = "/coinzmap.geojson"
@@ -49,6 +50,32 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
+
+
+        var current = LocalDateTime.now()
+        var formattedDate = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+        var now = current.format(formattedDate)
+
+        if (downloadDate != now) {
+
+            WalletActivity.DataWallet.coinRemain = 25f
+            downloadDate = now
+            var dateString = now
+
+            updatedURL = BASE_URL + dateString + endOfUrl
+            var json = DownloadFileTask(DownloadCompleteRunner).execute(updatedURL).get()
+
+            var FeatureCollection = FeatureCollection.fromJson(json)
+            var FeatureList = FeatureCollection.features()
+            var jsonObject = JSONObject(json)
+            var ratesObject = jsonObject.getJSONObject("rates")
+            MainActivity.Data.DOLR = ratesObject.getString("DOLR").toFloat()
+            MainActivity.Data.SHIL = ratesObject.getString("SHIL").toFloat()
+            MainActivity.Data.PENY = ratesObject.getString("PENY").toFloat()
+            MainActivity.Data.QUID = ratesObject.getString("QUID").toFloat()
+
+        }
 
         mAuth = FirebaseAuth.getInstance()
 
@@ -88,15 +115,108 @@ class HomeActivity : AppCompatActivity() {
         //Setting the text from the strings.xml file.
         textView.text = resources.getString(R.string.welcome, DataHome.mode)
 
-
-
-
-
-
-
-
+        FromFirebase()
 
     }
+
+
+
+    fun FromFirebase()   {
+
+        MainActivity.Data.wallet.clear()
+
+        if (mAuth?.currentUser == null) {
+            var intentlog = Intent(this, FirebaseUIActivity::class.java)
+            startActivity(intentlog)
+        } else {
+
+            Log.d(tag, "Someone is logged in" )
+        }
+
+        var userId = mAuth?.currentUser?.uid.toString()
+
+        db.collection("User/$userId/Wallet/Coin/IDs")
+                .get()
+                .addOnSuccessListener { documents ->
+
+                    for (document in documents) {
+                        if (document != null) {
+                            Log.d(tag, "DocumentSnapshot data: ${document.data}")
+                        } else {
+                            Log.d(tag, "No such document")
+                        }
+                        var value = document.get("value").toString()
+                        var currency = document.get("currency").toString()
+                        var id = document.get("id").toString()
+                        var coord : List<Double> = listOf(0.0,0.0)
+
+                        var Coin = Coin(id, coord,currency,value)
+
+                        MainActivity.Data.wallet.add(Coin)
+
+                    }
+
+
+                }
+                .addOnFailureListener { exception ->
+                    Log.d(tag, "get failed with ", exception)
+
+                }
+
+
+
+
+        db.collection("User/$userId/Bank").document("Gold")
+                .get()
+                .addOnSuccessListener { document ->
+
+
+                        if (document != null) {
+                            Log.d(tag, "DocumentSnapshot data: ${document.data}")
+                        } else {
+                            Log.d(tag, "No such document")
+                        }
+
+                        BankActivity.DataBank.gold = document.get("GOLD").toString()
+                        Log.d(tag, "HomeActivity l 200 the gold ${BankActivity.DataBank.gold}")
+                    }
+
+
+                .addOnFailureListener { exception ->
+                    Log.d(tag, "get failed with ", exception)
+
+                }
+        TransferActivity.DataTrans.ListofCoins.clear()
+        db.collection("User/$userId/Transfer/Coin/IDs")
+                .get()
+                .addOnSuccessListener { documents ->
+
+                    for (document in documents) {
+                        if (document != null) {
+                            Log.d(tag, "DocumentSnapshot data: ${document.data}")
+                        } else {
+                            Log.d(tag, "No such document")
+                        }
+                        var value = document.get("value").toString()
+                        var currency = document.get("currency").toString()
+                        var id = document.get("id").toString()
+                        var coord : List<Double> = listOf(0.0,0.0)
+
+                        var Coin = Coin(id, coord,currency,value)
+
+                        TransferActivity.DataTrans.ListofCoins.add(Coin)
+
+                    }
+
+
+                }
+                .addOnFailureListener { exception ->
+                    Log.d(tag, "get failed with ", exception)
+
+                }
+
+    }
+
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
@@ -161,13 +281,14 @@ class HomeActivity : AppCompatActivity() {
         //Restore preferences
         val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
         if (mAuth?.currentUser == null) {
-            var intentlog = Intent(this, FirebaseUIActivity::class.java)
+           var intentlog = Intent(this, FirebaseUIActivity::class.java)
             startActivity(intentlog)
         } else {
 
             Log.d(tag, "Someone is logged in" )
         }
 
+        downloadDate = settings.getString("lastDownloadDate", "")
 
         MainActivity.Data.SHIL  = settings.getFloat("SHIL", 1f)
         MainActivity.Data.DOLR  = settings.getFloat("DOLR", 1f)
@@ -176,6 +297,18 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
+    override fun onStop() {
+        super.onStop()
 
+
+        //All objects are from android.context.Context
+
+        val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
+
+        //We need an Editor object to make preferences changes
+        val editor = settings.edit()
+        editor.putString("lastDownloadDate", downloadDate)
+
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.example.ami.coinz
 
+import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -13,6 +14,9 @@ import android.widget.Button
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.mapbox.android.core.permissions.PermissionsManager
 
 class WalletActivity : AppCompatActivity() {
 
@@ -27,12 +31,11 @@ class WalletActivity : AppCompatActivity() {
 
     object DataWallet {
         var coinRemain = 25f
-        var count = 0
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_wallet)
-
+        mAuth = FirebaseAuth.getInstance()
 
         val bottomNavigation : BottomNavigationView = findViewById(R.id.navWBar)
         bottomNavigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
@@ -44,11 +47,14 @@ class WalletActivity : AppCompatActivity() {
 
         viewManager = LinearLayoutManager(this)
 
+
+
         var data = MainActivity.Data.wallet
         Log.d(tag," check 48 ${dataset}")
         Log.d(tag," check 49 ${data}")
         viewAdapter = MyAdapter(data)
-        viewAdapter.notifyDataSetChanged()
+        //viewAdapter.notifyDataSetChanged()
+
 
         recyclerView = findViewById<RecyclerView>(R.id.recyclerView).apply {
             // use this setting to improve performance if you know that changes
@@ -69,50 +75,6 @@ class WalletActivity : AppCompatActivity() {
         }
 
 
-    }
-
-
-
-    fun FromFirebase() : ArrayList<Coin>  {
-
-        var testarray : ArrayList<Coin> = ArrayList<Coin>()
-        mAuth = FirebaseAuth.getInstance()
-        var userId = mAuth?.currentUser?.uid as String
-
-        db.collection("User/$userId/Wallet/Coin/IDs")
-            .get()
-            .addOnSuccessListener { documents ->
-                Log.d(tag, "[walletactivity 84] check  ${documents.isEmpty}")
-                for (document in documents) {
-                    if (document != null) {
-                        Log.d(tag, "DocumentSnapshot data: ${document.data}")
-                    } else {
-                        Log.d(tag, "No such document")
-                    }
-                    var value = document.get("value").toString()
-                    var currency = document.get("currency").toString()
-                    var id = document.get("id").toString()
-                    var coord : List<Double> = listOf(0.0,0.0)
-
-                    var Coin = Coin(id, coord,currency,value)
-
-                    Log.d(tag, "[walletactivity 96] check  $Coin")
-                    dataset.add(Coin)
-                    testarray = dataset
-                    Log.d(tag, "[walletactivity 98] check  ${dataset}")
-                    Log.d(tag, "[walletactivity 99] check  ${testarray}")
-                }
-
-
-
-                Log.d(tag, "[walletactivity 106] check  ${testarray}")
-            }
-            .addOnFailureListener { exception ->
-                Log.d(tag, "get failed with ", exception)
-
-            }
-            Log.d(tag, "[walletactivity 111] check  ${testarray}")
-            return testarray
     }
 
 
@@ -149,6 +111,42 @@ class WalletActivity : AppCompatActivity() {
         false
     }
 
+
+
+    @SuppressWarnings("MissingPermission")
+    override fun onStart() {
+        super.onStart()
+
+        if (mAuth?.currentUser == null) {
+            var intentlog = Intent(this, FirebaseUIActivity::class.java)
+            startActivity(intentlog)
+        } else {
+
+            Log.d(tag, "Someone is logged in" )
+        }
+        val settings = getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+        DataWallet.coinRemain = settings.getFloat("Remain", 25f)
+        MyAdapter.DataAdapt.gold = settings.getFloat("GOLD", 0f)
+
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        //All objects are from android.context.Context
+
+        val settings = getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+
+        //We need an Editor object to make preferences changes
+        val editor = settings.edit()
+        editor.putFloat("Remain", DataWallet.coinRemain)
+        editor.putFloat("GOLD",MyAdapter.DataAdapt.gold)
+
+
+        editor.apply()
+
+    }
 
 
 

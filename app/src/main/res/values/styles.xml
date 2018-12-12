@@ -64,7 +64,17 @@
 
     <style name="ThemeOverlay.MyText" parent="AppTheme">
         <item name="android:gravity">center_horizontal</item>
-        <item name="android:textSize">36sp</item>
+        <item name="android:textSize">20sp</item>
     </style>
 
+    <style name="ThemeOverlay.MyTextBank" parent="AppTheme">
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">29sp</item>
+    </style>
+
+
+    <style name="ThemeOverlay.MyTextTrans" parent="AppTheme">
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textSize">15sp</item>
+    </style>
 </resources>
