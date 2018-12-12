@@ -6,7 +6,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import javax.net.ssl.HttpsURLConnection
 
 
 class DownloadFileTask (private val caller : DownloadCompleteListener) :
@@ -20,7 +19,6 @@ AsyncTask<String, Void, String>() {
 
     private fun loadFileFromNetwork(urlString : String): String {
         val stream : InputStream = downloadUrl(urlString)
-        // TODO Read input from stream, build result as a String
         result = stream.bufferedReader().use { it.readText() }
         return result as String
     }

@@ -2,6 +2,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.ami.coinz.HomeActivity">
+
+    <!-- Item populating the top toolbar of HomeScreen-->
+
     <item
         android:id="@+id/logout"
         android:orderInCategory="100"

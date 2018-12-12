@@ -11,6 +11,8 @@
         android:layout_above="@id/navTBar"
         android:layout_width="match_parent"
         android:layout_height="350dp"/>
+    <!-- Simple way of not letting the recyclerview stop at half the screen-->
+    <!--to have space to show the uid-->
 
 
     <android.support.design.widget.BottomNavigationView
