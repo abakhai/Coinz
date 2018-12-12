@@ -2,6 +2,7 @@
     <string name="app_name">Coinz</string>
     <string name="auth">Type your friend\'s uID</string>
     <string name="action_settings">Settings</string>
+    <string name="Steps">You stepped %1$s steps</string>
     <string name="log_out">Log Out</string>
     <string name="access_key">pk.eyJ1IjoiYWJha2hhaSIsImEiOiJjam4weDlxdGsxcDl3M2txbG4xNXY2NWV2In0.7tbxsNyPrP4OoZcLKwcSfg</string>
     <string name="marker_snippet">I am a coin, of value %1$s</string>

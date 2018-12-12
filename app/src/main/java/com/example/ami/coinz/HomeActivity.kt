@@ -2,6 +2,10 @@ package com.example.ami.coinz
 
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -28,7 +32,7 @@ import org.json.JSONObject
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : AppCompatActivity(){
 
     // Access a Cloud Firestore instance from your Activity
     val db = FirebaseFirestore.getInstance()
@@ -39,8 +43,6 @@ class HomeActivity : AppCompatActivity() {
     lateinit var updatedURL : String
     private val endOfUrl: String = "/coinzmap.geojson"
     private val preferencesFile = "MyPrefsFile" // for storing preferences
-    private var firestore: FirebaseFirestore? = null
-    private var firestoreUser: DocumentReference? = null
     var count = 0
 
     object DataHome {
@@ -50,9 +52,6 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-
-
-
         var current = LocalDateTime.now()
         var formattedDate = DateTimeFormatter.ofPattern("yyyy/MM/dd")
         var now = current.format(formattedDate)
@@ -114,6 +113,12 @@ class HomeActivity : AppCompatActivity() {
 
         //Setting the text from the strings.xml file.
         textView.text = resources.getString(R.string.welcome, DataHome.mode)
+
+
+        var textv : TextView = findViewById(R.id.stepsLbl)
+
+        //Setting the text from the strings.xml file.
+        textv.text = resources.getString(R.string.Steps, MainActivity.Data.steps)
 
         FromFirebase()
 
@@ -311,4 +316,10 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
+
+
+
 }
+
+
+

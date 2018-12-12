@@ -4,6 +4,10 @@ package com.example.ami.coinz
 //TODO clean up all the code, make dfferent function for each step
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Location
 import android.os.Bundle
 import android.os.PersistableBundle
@@ -16,6 +20,8 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -54,7 +60,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListener, LocationEngineListener {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListener, LocationEngineListener, SensorEventListener {
     private lateinit var mapView : MapView
 
     private var mAuth: FirebaseAuth? = null
@@ -85,11 +91,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     private var retro : RetrofitClient? = null
     private var uid = ""
     private var prevuid = ""
+    var running = false
+    var sensorManager: SensorManager? = null
 
     object Data {
         var wallet = ArrayList<Coin>()
         var coinsList = ArrayList<Coin>()
         var coinlist = ArrayList<Coin>()
+        var steps = "0"
 
         var DOLR = 0f
         var SHIL = 0f
@@ -102,6 +111,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
         toolba = supportActionBar!!
         val bottomNavigation : BottomNavigationView = findViewById(R.id.navBar)
@@ -464,11 +475,32 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
     override fun onResume() {
         super.onResume()
+
+        running = true
+        var stepsSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+
+        if (stepsSensor == null) {
+            Toast.makeText(this, "No Step Counter Sensor !", Toast.LENGTH_SHORT).show()
+        } else {
+            sensorManager?.registerListener(this, stepsSensor, SensorManager.SENSOR_DELAY_UI)
+        }
+
         mapView.onResume()
     }
     override fun onPause() {
         super.onPause()
+        running = false
+        sensorManager?.unregisterListener(this)
         mapView.onPause()
+    }
+
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+    }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        if (running) {
+            Data.steps = event.values[0].toString()
+        }
     }
 
     override fun onStop() {
