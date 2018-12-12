@@ -12,18 +12,10 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
-
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-
-
-
-
-
-
-    <!-- Activity with no Title -->
+ <!-- Activity with no Title -->
     <style name="ThemeOverlay.MyNoTitleActivity" parent="AppTheme">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -52,29 +44,30 @@
         <item name="android:textSize">14sp</item>
     </style>
 
+    <!-- Image position in sign in -->
     <style name="ThemeOverlay.FirebaseIcon" parent="AppTheme">
         <item name="android:layout_marginTop">@dimen/icon_top_margin</item>
         <item name="android:layout_marginBottom">@dimen/icon_bottom_margin</item>
     </style>
-
+    <!-- Big title -->
     <style name="ThemeOverlay.MyTitleText" parent="AppTheme">
         <item name="android:gravity">center</item>
         <item name="android:textSize">36sp</item>
     </style>
-
+    <!-- Medium title -->
     <style name="ThemeOverlay.MyText" parent="AppTheme">
         <item name="android:gravity">center_horizontal</item>
         <item name="android:textSize">20sp</item>
     </style>
-
+    <!-- Bank gold statement -->
     <style name="ThemeOverlay.MyTextBank" parent="AppTheme">
         <item name="android:gravity">center</item>
         <item name="android:textSize">29sp</item>
     </style>
-
-
+    <!-- Transfer screen uid text-->
     <style name="ThemeOverlay.MyTextTrans" parent="AppTheme">
-        <item name="android:gravity">center_horizontal</item>
+        <item name="android:gravity">center_horizontal
+        </item>
         <item name="android:textSize">15sp</item>
     </style>
 </resources>

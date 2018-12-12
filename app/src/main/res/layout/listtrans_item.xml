@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <!-- This is item holders for the recycler view in TransferActivity-->
+
 
     <android.support.v7.widget.CardView
         android:padding="5dp"
@@ -42,7 +44,8 @@
                 android:id="@+id/edit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/auth"/>
+                android:text="@string/auth"
+                android:inputType="text"/>
 
         </LinearLayout>
 

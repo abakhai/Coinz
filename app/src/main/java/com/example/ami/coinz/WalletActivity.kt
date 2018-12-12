@@ -10,51 +10,47 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.mapbox.android.core.permissions.PermissionsManager
 
 class WalletActivity : AppCompatActivity() {
 
+    private val tag = "Wallet Activity"
+
+    //Instantiating the recycler view
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
-    val db = FirebaseFirestore.getInstance()
-    val tag = "Wallet Activity"
-    private var mAuth: FirebaseAuth? = null
-    var hm = HashMap<String, Any>()
-    var dataset = ArrayList<Coin>()
 
+    // Variable for Firebase auth
+    private var mAuth: FirebaseAuth? = null
+
+    //Variable storing the 25 coin limit for bank transfers
+    //And to be able to pass it through to another class
     object DataWallet {
         var coinRemain = 25f
     }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_wallet)
+
+        //Getting the firebase user auth instance
         mAuth = FirebaseAuth.getInstance()
 
+        //Setting the BottomNavBar
         val bottomNavigation : BottomNavigationView = findViewById(R.id.navWBar)
         bottomNavigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
-        var menu = bottomNavigation.getMenu()
-        var menuItem = menu.getItem(2)
+        val menu = bottomNavigation.getMenu()
+        val menuItem = menu.getItem(2)
         menuItem.setChecked(true)
 
 
-
+        //Setting and populating the recyclerView
+        //with the data from the wallet from MainActivity
         viewManager = LinearLayoutManager(this)
-
-
-
-        var data = MainActivity.Data.wallet
-        Log.d(tag," check 48 ${dataset}")
-        Log.d(tag," check 49 ${data}")
+        val data = MainActivity.Data.wallet
         viewAdapter = MyAdapter(data)
-        //viewAdapter.notifyDataSetChanged()
-
 
         recyclerView = findViewById<RecyclerView>(R.id.recyclerView).apply {
             // use this setting to improve performance if you know that changes
@@ -66,44 +62,43 @@ class WalletActivity : AppCompatActivity() {
             // specify an viewAdapter (see also next example)
             adapter = viewAdapter }
 
-
+        //Setting an info button on the screen
+        //Which shows the remaining bank transfer possible for the day
         val fab: View = findViewById(R.id.fab)
         fab.setOnClickListener{ view ->
             Snackbar.make(view, getString(R.string.remaining, DataWallet.coinRemain.toInt()), Snackbar.LENGTH_LONG)
-                    .setAction("tAction", null)
+                    .setAction("Action", null)
                     .show()
         }
-
-
     }
 
-
-
+    //Populating the BottomNavBar
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.homenav -> {
-                var intent1 = Intent(this, HomeActivity::class.java)
+                val intent1 = Intent(this, HomeActivity::class.java)
                 startActivity(intent1)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.mapnav -> {
-                var intent2 = Intent(this, MainActivity::class.java)
+                val intent2 = Intent(this, MainActivity::class.java)
                 startActivity(intent2)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.walletnav -> {
-                var intent3 = Intent(this, WalletActivity::class.java)
+                val intent3 = Intent(this, WalletActivity::class.java)
+                //Stopping the Activity to overlay itself if user pressed on the activity they are on
                 intent3.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                 startActivity(intent3)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.banknav -> {
-                var intent4 = Intent(this, BankActivity::class.java)
+                val intent4 = Intent(this, BankActivity::class.java)
                 startActivity(intent4)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.transfernav -> {
-                var intent5 = Intent(this, TransferActivity::class.java)
+                val intent5 = Intent(this, TransferActivity::class.java)
                 startActivity(intent5)
                 return@OnNavigationItemSelectedListener true
             }
@@ -116,40 +111,32 @@ class WalletActivity : AppCompatActivity() {
     @SuppressWarnings("MissingPermission")
     override fun onStart() {
         super.onStart()
-
+        //Making sure that there is a unique user auth identification
         if (mAuth?.currentUser == null) {
-            var intentlog = Intent(this, FirebaseUIActivity::class.java)
+            val intentlog = Intent(this, FirebaseUIActivity::class.java)
             startActivity(intentlog)
         } else {
-
             Log.d(tag, "Someone is logged in" )
         }
         val settings = getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+        //Remembered amount of bank transfers
         DataWallet.coinRemain = settings.getFloat("Remain", 25f)
+        //Remembered amount of Golf in the bank
         MyAdapter.DataAdapt.gold = settings.getFloat("GOLD", 0f)
-
-
     }
 
     override fun onStop() {
         super.onStop()
 
-        //All objects are from android.context.Context
-
         val settings = getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
 
-        //We need an Editor object to make preferences changes
         val editor = settings.edit()
+        //Remembering the remain amount of bank transfers
         editor.putFloat("Remain", DataWallet.coinRemain)
+        //Remembering the amount of Gold in the bank
         editor.putFloat("GOLD",MyAdapter.DataAdapt.gold)
-
-
         editor.apply()
-
     }
-
-
-
 
 }
 

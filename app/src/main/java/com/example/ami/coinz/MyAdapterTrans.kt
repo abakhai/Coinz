@@ -1,8 +1,5 @@
 package com.example.ami.coinz
 
-import android.content.DialogInterface
-import android.content.Intent
-import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,9 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MyAdapterTrans(private val myDataset: ArrayList<Coin>) :
@@ -24,14 +19,16 @@ class MyAdapterTrans(private val myDataset: ArrayList<Coin>) :
     // you provide access to all the views for a data item in a view holder.
     // Each data item is just a string in this case that is shown in a TextView.
     val tag = "MyAdapterTrans"
+
+    //Variables for firebase
     val db = FirebaseFirestore.getInstance()
     private var mAuth: FirebaseAuth? = null
     var hm = HashMap<String, Any>()
+
+    //List of coins
     private var coinList = ArrayList<Coin>()
 
     // Replace the contents of a view (invoked by the layout manager)
-
-
     class MyViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
 
         val text = itemView.findViewById<TextView>(R.id.textView)
@@ -51,7 +48,6 @@ class MyAdapterTrans(private val myDataset: ArrayList<Coin>) :
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.listtrans_item, parent, false)
         // set the view's size, margins, paddings and layout parameters
-
         return MyViewHolder(view)
     }
 
@@ -59,35 +55,34 @@ class MyAdapterTrans(private val myDataset: ArrayList<Coin>) :
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
 
+        //Variable to get the firebase info for the user
         mAuth = FirebaseAuth.getInstance()
-        var userId = mAuth?.currentUser?.uid as String
-        var id = myDataset[position].id
-        var idTrans = myDataset[position].id + "tran"
+        val userId = mAuth?.currentUser?.uid as String
+        val id = myDataset[position].id
+        //changing the id of the transferred coin so duplicate coin can be added
+        val idTrans = myDataset[position].id + "tran"
 
         Log.d(tag, "mainactivity transfer 66 ${MainActivity.Data.wallet.contains(myDataset[position])}  ${myDataset[position]}")
 
 
         if (TransferActivity.DataTrans.listofId.contains(myDataset[position].id)) {
-
+            //if the transferred coin is in the wallet then populate it with the correct info
 
         holder.text.text = myDataset[position].value
         holder.textcurr.text = myDataset[position].curr
         var rates = myDataset[position].value.toFloat() * MainActivity.Data.QUID
-        var c = MainActivity.Data.QUID
         if (myDataset[position].curr == "DOLR") {
             rates = myDataset[position].value.toFloat() * MainActivity.Data.DOLR
-            c = MainActivity.Data.DOLR
         } else if (myDataset[position].curr == "PENY") {
             rates = myDataset[position].value.toFloat() * MainActivity.Data.PENY
-            c = MainActivity.Data.PENY
         } else if (myDataset[position].curr == "SHIL") {
             rates = myDataset[position].value.toFloat() * MainActivity.Data.SHIL
-            c = MainActivity.Data.SHIL
         }
 
         holder.textgold.text = rates.toString()
 
-
+            //At Transfer button clicked, send the coin to the user written in the EditText
+            //Remove the coin from the destined to be transferred lists and wallet
         holder.button1.setOnClickListener {
             hm["currency"] = myDataset[position].curr
             hm["value"] = (myDataset[position].value).toFloat()
@@ -104,39 +99,30 @@ class MyAdapterTrans(private val myDataset: ArrayList<Coin>) :
                     .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
 
             MainActivity.Data.wallet.remove(myDataset[position])
-
-            Log.d(tag, "listofIds transfer 107 ${TransferActivity.DataTrans.listofId}  ${myDataset[position].id}")
             TransferActivity.DataTrans.listofId.remove(myDataset[position].id)
-
-            Log.d(tag, "listofIds transfer 108 ${TransferActivity.DataTrans.listofId}  ${myDataset[position].id}")
-
             coinList.clear()
 
             for (coin in MainActivity.Data.wallet) {
-
-                Log.d(tag, "listofIds transfer 111 list of ids ${TransferActivity.DataTrans.listofId}  this coin id ${myDataset[position].id} the coin $coin the coin id ${coin.id}")
+                //Because the value of the coins varied, I had to only compare the coins via id
+                //And remove the coin that is transferred from the wallter
                 if (!TransferActivity.DataTrans.listofId.contains(coin.id)) {
-                    Log.d(tag, "mainactivity transfer before rem ${MainActivity.Data.wallet}  ${myDataset[position]}")
                     coinList.add(coin)
-                    Log.d(tag, "mainactivity transfer after rem ${MainActivity.Data.wallet}  ${myDataset[position]}")
                 }
-                Log.d(tag, "listofIds transfer 114 ${TransferActivity.DataTrans.listofId}  ${myDataset[position].id}")
             }
-
-
             MainActivity.Data.wallet.removeAll(coinList)
-            Log.d(tag, "mainactivity transfer 118 ${MainActivity.Data.wallet.contains(myDataset[position])}  ${myDataset[position]}")
             TransferActivity.DataTrans.ListofCoins.removeAt(holder.adapterPosition)
             notifyDataSetChanged()
         }
 
 
         } else {
-
-
+            //If the coin in the destined to be transferred list is not in the wallet
+            // -> the coin was banked so display the coin is banked
             holder.textgold.text = ""
             holder.text.text = ""
-            holder.textcurr.text = "You banked this coin"
+            holder.textcurr.text = "You have banked this coin"
+            //The coin should disappear from the Transfer screen, if not, if the user clicks the Transfer button the coin will disappear
+            //So will it from the firebase
             holder.button1.setOnClickListener {
                 db.collection("User/$userId/Transfer/Coin/IDs").document("$id")
                         .delete()
@@ -145,7 +131,6 @@ class MyAdapterTrans(private val myDataset: ArrayList<Coin>) :
 
                 TransferActivity.DataTrans.ListofCoins.removeAt(holder.adapterPosition)
                 notifyDataSetChanged()
-
             }
 
         }

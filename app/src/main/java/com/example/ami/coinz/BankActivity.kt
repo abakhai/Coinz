@@ -7,14 +7,15 @@ import android.support.design.widget.BottomNavigationView
 import android.util.Log
 import android.widget.TextView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import timber.log.Timber
+
 
 class BankActivity : AppCompatActivity() {
 
-    val db = FirebaseFirestore.getInstance()
     private var mAuth: FirebaseAuth? = null
 
-   val tag = "Bank Activity"
+    private val tag = "Bank Activity"
+    //Variable holding the amount of Gold the user has got
     object DataBank {
         var gold = ""
     }
@@ -23,80 +24,49 @@ class BankActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bank)
 
+        //Getting the Auth instance
         mAuth = FirebaseAuth.getInstance()
 
-
+        //Setting my BottomNavBar
         val bottomNavigation : BottomNavigationView = findViewById(R.id.navBBar)
         bottomNavigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
-        var menu = bottomNavigation.getMenu()
-        var menuItem = menu.getItem(3)
+        val menu = bottomNavigation.getMenu()
+        val menuItem = menu.getItem(3)
         menuItem.setChecked(true)
 
-
-        var textView : TextView = findViewById(R.id.banktv)
-
+        //Seeting the TextView
+        val textView : TextView = findViewById(R.id.banktv)
         //Setting the text from the strings.xml file.
         textView.text = resources.getString(R.string.bank, DataBank.gold)
-
     }
 
-    fun FromFirebase() {
-
-        var userId = mAuth?.currentUser?.uid
-
-        db.collection("User/$userId/Bank").document("Gold")
-                .get()
-                .addOnSuccessListener { document ->
-
-
-                    if (document != null) {
-                        Log.d(tag, "DocumentSnapshot data: ${document.data}")
-                    } else {
-                        Log.d(tag, "No such document")
-                    }
-
-                    BankActivity.DataBank.gold = document.get("GOLD").toString()
-                    Log.d(tag, "HomeActivity l 200 the gold ${BankActivity.DataBank.gold}")
-                }
-
-
-                .addOnFailureListener { exception ->
-                    Log.d(tag, "get failed with ", exception)
-
-                }
-
-
-    }
-
-
-
-
-
+    //Populating the BottomNavVar
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.homenav -> {
-                var intent1 = Intent(this, HomeActivity::class.java)
+                val intent1 = Intent(this, HomeActivity::class.java)
                 startActivity(intent1)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.mapnav -> {
-                var intent2 = Intent(this, MainActivity::class.java)
+                val intent2 = Intent(this, MainActivity::class.java)
                 startActivity(intent2)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.walletnav -> {
-                var intent3 = Intent(this, WalletActivity::class.java)
+                val intent3 = Intent(this, WalletActivity::class.java)
                 startActivity(intent3)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.banknav -> {
-                var intent4 = Intent(this, BankActivity::class.java)
+                val intent4 = Intent(this, BankActivity::class.java)
+                //Stopping the Activity to overlay itself if user pressed on the activity they are on
                 intent4.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                 startActivity(intent4)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.transfernav -> {
-                var intent5 = Intent(this, TransferActivity::class.java)
+                val intent5 = Intent(this, TransferActivity::class.java)
                 startActivity(intent5)
                 return@OnNavigationItemSelectedListener true
             }
@@ -104,20 +74,16 @@ class BankActivity : AppCompatActivity() {
         false
     }
 
-
     @SuppressWarnings("MissingPermission")
     override fun onStart() {
         super.onStart()
-
         if (mAuth?.currentUser == null) {
-            var intentlog = Intent(this, FirebaseUIActivity::class.java)
+            val intentlog = Intent(this, FirebaseUIActivity::class.java)
             startActivity(intentlog)
         } else {
 
             Log.d(tag, "Someone is logged in" )
         }
-
-
     }
 
 }
