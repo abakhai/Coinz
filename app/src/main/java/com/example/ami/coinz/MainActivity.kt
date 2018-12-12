@@ -83,6 +83,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     private lateinit var originLocation : Location
     private var locationEngine : LocationEngine? = null
     private var retro : RetrofitClient? = null
+    private var uid = ""
+    private var prevuid = ""
 
     object Data {
         var wallet = ArrayList<Coin>()
@@ -105,6 +107,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         val bottomNavigation : BottomNavigationView = findViewById(R.id.navBar)
 
         mAuth = FirebaseAuth.getInstance()
+        prevuid = mAuth?.currentUser?.uid as String
         Mapbox.getInstance(applicationContext, getString(R.string.access_key))
         //changed it from applicationcontext to this and now back TODO remove comment
         mapView = findViewById(R.id.mapboxMapView)
@@ -182,8 +185,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         var formattedDate = DateTimeFormatter.ofPattern("yyyy/MM/dd")
         var now = current.format(formattedDate)
 
-        if (now != downloadDate) {
+        if (now != downloadDate || prevuid != mAuth?.currentUser?.uid) {
 
+            prevuid = mAuth?.currentUser?.uid as String
             downloadDate = now
 
             Log.d(tag, "[if 182] check date $now yo $downloadDate yes")
@@ -322,6 +326,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
             } else if (HomeActivity.DataHome.mode.equals("MEDIUM")) {
                 distance = 35
             }
+            Data.coinlist.clear()
 
             for (c in Data.coinsList) {
                 loc.latitude = c.coord[1]
@@ -330,13 +335,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
             if (originLocation.distanceTo(loc) <= distance) {
                 Data.coinlist.add(c)
-
                 if (!Data.wallet.contains(c)) {
                     Data.wallet.add(c)
                 }
-                var check = Data.coinlist.size
-                var che = Data.wallet.size
-                Log.d(tag, "[coinlist] check coinlist and wallet $check $che")
+
 
             }
 
@@ -346,10 +348,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
                     Data.coinsList.remove(coin)
                     hm["currency"] = coin.curr
                     hm["value"] = (coin.value).toFloat()
+                    hm["id"] = coin.id
+                    hm["coord"] = coin.coord
                     var id = coin.id
                     var check = Data.coinsList.size
                     Log.d(tag, "[coinsList] check after remove $check ")
                   db.document("User/$userId/Wallet/Coin/IDs/$id").set(hm)
+
 
 
             }
@@ -358,6 +363,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
             setCameraPostition(originLocation)
         }
     }
+
 
     override fun onPermissionResult(granted: Boolean) {
         Log.d(tag, "[onPermissionResult] granted == $granted")
@@ -428,9 +434,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
             Log.d(tag, "Someone is logged in" )
         }
+
         //Restore preferences
         val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
-
+        prevuid = settings.getString("prevuid", mAuth?.currentUser?.uid)
         //use "" as the default value (this might be the first time the app is run)
         downloadDate = settings.getString("lastDownloadDate", "")
         //Write a message to "logcat" (for debugging purposes)
@@ -446,17 +453,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         }
         val gson = Gson()
         val json = settings.getString("Coins list", "")
-        val jsonwallet = settings.getString("Wallet", "")
         val type = object : TypeToken<List<Coin>>() {}.type
         if (!json.isEmpty()) {
             var coinList: List<Coin> = gson.fromJson<List<Coin>>(json, type)
             Data.coinsList = ArrayList(coinList)
         }
-        if (!jsonwallet.isEmpty()) {
-            var walet: List<Coin> = gson.fromJson<List<Coin>>(jsonwallet, type)
-            Data.wallet = ArrayList(walet)
-        }
-
 
         mapView.onStart()
     }
@@ -473,6 +474,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
     override fun onStop() {
         super.onStop()
 
+
         Log.d(tag, "[onStop] Storing lastDownloadDate of $downloadDate")
 
         //All objects are from android.context.Context
@@ -481,15 +483,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
         //We need an Editor object to make preferences changes
         val editor = settings.edit()
+        editor.putString("prevuid", prevuid)
         editor.putString("lastDownloadDate", downloadDate)
         editor.putFloat("SHIL", Data.SHIL)
         editor.putFloat("DOLR", Data.DOLR)
         editor.putFloat("PENY", Data.PENY)
         editor.putFloat("QUID", Data.QUID)
         var gson = Gson()
-        var jsonwallet = gson.toJson(Data.wallet)
         var json = gson.toJson(Data.coinsList)
-        editor.putString("Wallet", jsonwallet)
         editor.putString("Coins list", json)
         //https://stackoverflow.com/questions/14981233/android-arraylist-of-custom-objects-save-to-sharedpreferences-serializable?fbclid=IwAR0TkPyRYJXSszjDFuEGgtariSqLPO0R_TL1KgheJ8rZRk8AN-FNzVJDX2Q
         //Apply the edits!

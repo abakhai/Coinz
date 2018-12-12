@@ -34,7 +34,6 @@
             android:id="@+id/status"
             style="@style/ThemeOverlay.MyTextDetail"
             android:text="@string/signed_out" />
-
         <TextView
             android:id="@+id/detail"
             style="@style/ThemeOverlay.MyTextDetail"
