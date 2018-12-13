@@ -176,8 +176,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         //if the previous user was different then the current user
         if (now != downloadDate || prevuid != mAuth?.currentUser?.uid) {
 
+            //Clearing the list of coins for new coins
+            Data.coinsList.clear()
+
+            //Adding markers after removing the previous ones so they don't overlay
+            map?.clear()
+
             //Save the previous user as the current user
             prevuid = mAuth?.currentUser?.uid as String
+
             //Make the remembered date the current date
             downloadDate = now
             val dateString = downloadDate
@@ -210,6 +217,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
 
             }
         }
+        //Adding markers after removing the previous ones so they don't overlay
         //Adding the markers associated to the coin on the map
         addMarkers(map, Data.coinsList)
     }
