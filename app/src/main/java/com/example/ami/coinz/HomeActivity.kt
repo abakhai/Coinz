@@ -19,6 +19,22 @@ import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+
+
+/**
+ * This Activity is for showing the Home Screen
+ *
+ * It updates all the gold, the wallet and the destined to be transferred coins from firebase.
+ * It is the first activity that will be seen unless the user is logged out
+ * They will also be able to set a mode
+ * easy = collection distance is 70m
+ * medium = collection distance is 35m
+ * hard = collection distance is 20m
+ *
+ * The user can also see their amount of steps
+ *
+ */
+
 class HomeActivity : AppCompatActivity(){
 
     private var tag = "HomeActivity"

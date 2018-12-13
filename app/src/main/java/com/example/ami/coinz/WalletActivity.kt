@@ -12,6 +12,18 @@ import android.util.Log
 import android.view.View
 import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * This Activity is for showing the Wallet Screen
+ *
+ * It updates the recyclerView on this activity with the coins that were collected in the map.
+ * Those coins are therefore shown here. (Helped by MyAdapter)
+ * There will be information displayed like the value, the currency and the Gold amount of the coin.
+ * The user can choose to bank the coin or transfer or do nothing.
+ * The user is also bounded by the maximum amount of transfer to the bank possible which is 25
+ *
+ *
+ */
+
 class WalletActivity : AppCompatActivity() {
 
     private val tag = "Wallet Activity"

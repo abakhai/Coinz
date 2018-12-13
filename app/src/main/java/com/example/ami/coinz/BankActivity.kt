@@ -7,7 +7,13 @@ import android.support.design.widget.BottomNavigationView
 import android.util.Log
 import android.widget.TextView
 import com.google.firebase.auth.FirebaseAuth
-import timber.log.Timber
+
+/**
+ * This Activity is for showing the Bank screen.
+ *
+ * It updates the gold value from the Wallet Activity and shows it in a TextView
+ *
+ */
 
 
 class BankActivity : AppCompatActivity() {

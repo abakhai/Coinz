@@ -43,6 +43,14 @@ import java.time.format.DateTimeFormatter
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
+/**
+ * This Activity is for showing the map
+ *
+ * This activity adds the markers to the map, puts the map on the screen,
+ * fetches information from json, senses steps and collects coins.
+ *
+ */
+
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListener, LocationEngineListener, SensorEventListener {
 
     //Variables for the map
