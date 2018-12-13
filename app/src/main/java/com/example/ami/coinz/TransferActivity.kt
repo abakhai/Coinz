@@ -11,6 +11,20 @@ import android.widget.TextView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+
+/**
+ * This Activity is for showing the Transfer Screen
+ *
+ * It updates the recyclerView on this activity with the coins that are destined to be transferred.
+ * (Helped by MyAdapterTrans)
+ * Destined means that the user clicked on the Transfer button on the Wallet Activity
+ * Those coins are therefore shown here.
+ * If in the mean time the user banks the coin the coin on the transfer screen will disappear.
+ * The user can transfer the coin to someone, by typing their unique authenticator.
+ * The user is also shown their own unique auth.
+ *
+ */
+
 class TransferActivity : AppCompatActivity() {
 
     val tag = "Trans Activity"
