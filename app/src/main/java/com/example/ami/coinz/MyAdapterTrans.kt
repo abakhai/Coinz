@@ -88,12 +88,12 @@ class MyAdapterTrans(private val myDataset: ArrayList<Coin>) :
             hm["value"] = (myDataset[position].value).toFloat()
             hm["id"] = myDataset[position].id
             hm["coord"] = myDataset[position].coord
-            db.document("User/${holder.edit.text.toString()}/Wallet/Coin/IDs/$idTrans").set(hm)
-            db.collection("User/$userId/Wallet/Coin/IDs").document("$id")
+            db.document("User/${holder.edit.text}/Wallet/Coin/IDs/$idTrans").set(hm)
+            db.collection("User/$userId/Wallet/Coin/IDs").document(id)
                     .delete()
                     .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
                     .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
-            db.collection("User/$userId/Transfer/Coin/IDs").document("$id")
+            db.collection("User/$userId/Transfer/Coin/IDs").document(id)
                     .delete()
                     .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
                     .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
@@ -124,7 +124,7 @@ class MyAdapterTrans(private val myDataset: ArrayList<Coin>) :
             //The coin should disappear from the Transfer screen, if not, if the user clicks the Transfer button the coin will disappear
             //So will it from the firebase
             holder.button1.setOnClickListener {
-                db.collection("User/$userId/Transfer/Coin/IDs").document("$id")
+                db.collection("User/$userId/Transfer/Coin/IDs").document(id)
                         .delete()
                         .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
                         .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }

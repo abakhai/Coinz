@@ -101,12 +101,12 @@ class MyAdapter(private val myDataset: ArrayList<Coin>) :
                 hm["GOLD"] = rates.toString()
                 db.document("User/$userId/Bank/Coin/IDs/$id").set(hm)
                 //Delete the coin from the wallet
-                db.collection("User/$userId/Wallet/Coin/IDs").document("$id")
+                db.collection("User/$userId/Wallet/Coin/IDs").document(id)
                         .delete()
                         .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
                         .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
                 //Delete the coin from the transfer screen
-                db.collection("User/$userId/Transfer/Coin/IDs").document("$id")
+                db.collection("User/$userId/Transfer/Coin/IDs").document(id)
                         .delete()
                         .addOnSuccessListener { Log.d(tag, "check DocumentSnapshot successfully deleted!") }
                         .addOnFailureListener { e -> Log.w(tag, "check Error deleting document", e) }
