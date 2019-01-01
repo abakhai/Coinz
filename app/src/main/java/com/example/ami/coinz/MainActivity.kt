@@ -479,7 +479,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, PermissionsListene
         //Savinf list of collected coins
         val json = gson.toJson(Data.coinsList)
         editor.putString("Coins list", json)
-        //https://stackoverflow.com/questions/14981233/android-arraylist-of-custom-objects-save-to-sharedpreferences-serializable?fbclid=IwAR0TkPyRYJXSszjDFuEGgtariSqLPO0R_TL1KgheJ8rZRk8AN-FNzVJDX2Q
         //Apply the edits!
         editor.apply()
 
